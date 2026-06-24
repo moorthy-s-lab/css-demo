@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CSS Gap Decorations — a working specimen</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Hanken+Grotesk:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper:    #e9eae4;   /* drafting-paper ground            */
+    --panel:    #f4f5f0;   /* raised specimen card             */
+    --ink:      #1a1d22;   /* near-black text + structural ink */
+    --ink-soft: #5a5e66;   /* secondary text                  */
+    --line:     #c3c5bd;   /* hairline dividers               */
+    --accent:   #2f4fd6;   /* the "live" rule colour          */
+    --accent-2: #d9531e;   /* secondary rule colour           */
+    --code-bg:  #1c1f26;
+    --code-fg:  #e6e7ea;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: "Hanken Grotesk", system-ui, sans-serif;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap { max-width: 880px; margin: 0 auto; padding: 48px 24px 96px; }
+
+  /* ---------- masthead ---------- */
+  header { margin-bottom: 8px; }
+  .eyebrow {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--ink-soft); margin: 0 0 14px;
+  }
+  h1 {
+    font-family: "Space Grotesk", sans-serif;
+    font-weight: 700; font-size: clamp(34px, 6vw, 56px);
+    line-height: 1.02; letter-spacing: -0.02em; margin: 0 0 16px;
+  }
+  .lede { font-size: 18px; color: var(--ink-soft); max-width: 56ch; margin: 0; }
+
+  /* ---------- support banner ---------- */
+  .support {
+    margin: 28px 0 0; padding: 14px 18px; border-radius: 10px;
+    font-family: "JetBrains Mono", monospace; font-size: 13px;
+    display: flex; gap: 10px; align-items: center;
+  }
+  .support.ok   { background: #e3efe4; color: #1d5b2c; border: 1px solid #b6d8bb; }
+  .support.no   { background: #f6e4dc; color: #8a3415; border: 1px solid #e3bca8; }
+  .support b { font-weight: 500; }
+
+  /* ---------- section scaffolding ---------- */
+  section { margin-top: 56px; }
+  .num {
+    font-family: "JetBrains Mono", monospace; font-size: 12px;
+    letter-spacing: 0.1em; color: var(--accent); margin: 0 0 6px;
+  }
+  h2 {
+    font-family: "Space Grotesk", sans-serif; font-weight: 600;
+    font-size: 24px; letter-spacing: -0.01em; margin: 0 0 8px;
+  }
+  .desc { color: var(--ink-soft); margin: 0 0 22px; max-width: 60ch; }
+
+  .specimen {
+    background: var(--panel); border: 1px solid var(--line);
+    border-radius: 14px; padding: 26px;
+  }
+
+  /* item styling shared across demos */
+  .cell {
+    background: var(--paper);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: "JetBrains Mono", monospace; font-size: 13px;
+    color: var(--ink-soft); min-height: 64px;
+  }
+
+  /* ===== DEMO 1 — interactive basic grid ===== */
+  .demo-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--g1-gap, 24px);
+    /* THE FEATURE — vertical + horizontal rules in the gaps */
+    column-rule: var(--g1-w, 2px) var(--g1-style, solid) var(--accent);
+    row-rule:    var(--g1-w, 2px) var(--g1-style, solid) var(--accent);
+  }
+
+  .controls {
+    margin-top: 20px; padding-top: 20px; border-top: 1px dashed var(--line);
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 16px 22px;
+  }
+  .ctl { display: flex; flex-direction: column; gap: 6px; }
+  .ctl label {
+    font-family: "JetBrains Mono", monospace; font-size: 11px;
+    letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-soft);
+    display: flex; justify-content: space-between;
+  }
+  .ctl label b { color: var(--accent); font-weight: 500; }
+  input[type="range"] { width: 100%; accent-color: var(--accent); }
+  select {
+    font-family: "JetBrains Mono", monospace; font-size: 13px;
+    padding: 7px 9px; border: 1px solid var(--line); border-radius: 7px;
+    background: var(--paper); color: var(--ink);
+  }
+
+  /* ===== DEMO 2 — repeat() pattern (thin / thick) ===== */
+  .demo-pattern {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    grid-template-rows: repeat(3, 56px);
+    gap: 8px;
+    column-rule-style: solid;
+    column-rule-color: var(--accent);
+    /* thin, thin, THICK, thin, thin  → repeats across the gaps */
+    column-rule-width: repeat(2, 1px) 4px repeat(2, 1px);
+    row-rule-style: solid;
+    row-rule-color: var(--accent);
+    row-rule-width: 1px;
+  }
+
+  /* ===== DEMO 3 — flex list, columns only ===== */
+  .demo-flex {
+    display: flex; flex-wrap: wrap; gap: 14px 28px;
+    column-rule: 1px solid var(--ink-soft);
+  }
+  .demo-flex .cell { padding: 8px 18px; min-height: auto; background: transparent; }
+
+  /* ===== DEMO 4 — rule-break ===== */
+  .break-row { display: grid; grid-template-columns: repeat(3, 1fr);
+               grid-template-rows: repeat(2, 64px); gap: 18px;
+               margin-bottom: 4px; }
+  .break-row .cell { background: var(--paper); }
+  .demo-break-normal       { column-rule: 3px solid var(--accent);   row-rule: 3px solid var(--accent-2);   column-rule-break: normal; }
+  .demo-break-intersection { column-rule: 3px solid var(--accent);   row-rule: 3px solid var(--accent-2);   column-rule-break: intersection; }
+  .demo-break-none         { column-rule: 3px solid var(--accent);   row-rule: 3px solid var(--accent-2);   column-rule-break: none; }
+  .break-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; }
+  .break-cap { font-family: "JetBrains Mono", monospace; font-size: 11px;
+               color: var(--ink-soft); margin: 8px 0 0; text-align: center; }
+
+  /* ===== DEMO 5 — rule-inset ===== */
+  .demo-inset {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(2, 56px); gap: 26px;
+    column-rule: 2px solid var(--accent);
+    row-rule: 2px solid var(--accent);
+    rule-inset: var(--inset, 0px);          /* pull rules inward from gap ends */
+  }
+
+  /* ---------- code blocks ---------- */
+  pre {
+    margin: 18px 0 0; background: var(--code-bg); color: var(--code-fg);
+    border-radius: 10px; padding: 18px 20px; overflow-x: auto;
+    font-family: "JetBrains Mono", monospace; font-size: 12.5px; line-height: 1.7;
+  }
+  pre .k { color: #8fb6ff; }  /* property */
+  pre .v { color: #f0b67f; }  /* value    */
+  pre .c { color: #6b7280; }  /* comment  */
+
+  /* ---------- caniuse support ---------- */
+  .ciu-embed { margin: 0 0 14px; }
+  .ciu-note {
+    font-family: "JetBrains Mono", monospace; font-size: 12px;
+    color: var(--ink-soft); margin: 14px 0 0; display: flex;
+    flex-wrap: wrap; gap: 6px 14px; align-items: center;
+  }
+  .ciu-note a { color: var(--accent); }
+  .badge {
+    font-family: "JetBrains Mono", monospace; font-size: 11px;
+    padding: 3px 8px; border-radius: 999px; background: #f6e4dc;
+    color: #8a3415; border: 1px solid #e3bca8;
+  }
+  .support-table { width: 100%; border-collapse: collapse; }
+  .support-table caption {
+    font-family: "JetBrains Mono", monospace; font-size: 11px;
+    letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-soft);
+    text-align: left; margin-bottom: 14px;
+  }
+  .support-table th, .support-table td {
+    text-align: left; padding: 10px 12px; font-size: 14px;
+    border-bottom: 1px solid var(--line);
+  }
+  .support-table th {
+    font-family: "JetBrains Mono", monospace; font-size: 11px;
+    letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-soft);
+    font-weight: 500;
+  }
+  .support-table td:first-child { font-weight: 600; }
+  .yes { color: #1d5b2c; } .no { color: #8a3415; } .partial { color: #8a5a15; }
+  .since { font-family: "JetBrains Mono", monospace; font-size: 13px; color: var(--ink-soft); }
+
+  footer {
+    margin-top: 72px; padding-top: 24px; border-top: 1px solid var(--line);
+    font-family: "JetBrains Mono", monospace; font-size: 12px; color: var(--ink-soft);
+  }
+  footer a { color: var(--accent); }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .specimen { transition: none; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <p class="eyebrow">CSS Gap Decorations · Module Level 1</p>
+    <h1>Lines that live in the gaps.</h1>
+    <p class="lede">
+      <code>column-rule</code>, <code>row-rule</code>, and the <code>rule</code>
+      shorthand draw separators between grid and flex items — no per-item
+      borders, no <code>nth-child</code> surgery. The container draws them.
+    </p>
+    <div id="support" class="support"></div>
+  </header>
+
+  <!-- ============ 1 ============ -->
+  <section>
+    <p class="num">01 / SHORTHAND BASICS — interactive</p>
+    <h2>column-rule + row-rule</h2>
+    <p class="desc">
+      Add a normal <code>gap</code>, then style it. Drag the controls and watch the
+      rules redraw. They never touch the layout — purely paint.
+    </p>
+
+    <div class="specimen">
+      <div class="demo-grid" id="g1">
+        <div class="cell">1</div><div class="cell">2</div><div class="cell">3</div>
+        <div class="cell">4</div><div class="cell">5</div><div class="cell">6</div>
+      </div>
+
+      <div class="controls">
+        <div class="ctl">
+          <label>rule width <b id="g1-w-val">2px</b></label>
+          <input type="range" id="g1-w" min="0" max="10" value="2">
+        </div>
+        <div class="ctl">
+          <label>gap <b id="g1-gap-val">24px</b></label>
+          <input type="range" id="g1-gap" min="6" max="48" value="24">
+        </div>
+        <div class="ctl">
+          <label>rule style</label>
+          <select id="g1-style">
+            <option value="solid">solid</option>
+            <option value="dashed">dashed</option>
+            <option value="dotted">dotted</option>
+            <option value="double">double</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+<pre><span class="k">.grid</span> {
+  <span class="k">display</span>: <span class="v">grid</span>;
+  <span class="k">grid-template-columns</span>: <span class="v">repeat(3, 1fr)</span>;
+  <span class="k">gap</span>: <span class="v">24px</span>;
+  <span class="c">/* the whole feature, two lines: */</span>
+  <span class="k">column-rule</span>: <span class="v">2px solid #2f4fd6</span>;  <span class="c">/* between columns */</span>
+  <span class="k">row-rule</span>:    <span class="v">2px solid #2f4fd6</span>;  <span class="c">/* between rows    */</span>
+}
+<span class="c">/* identical result with the universal shorthand: */</span>
+<span class="k">.grid</span> { <span class="k">rule</span>: <span class="v">2px solid #2f4fd6</span>; }</pre>
+  </section>
+
+  <!-- ============ 2 ============ -->
+  <section>
+    <p class="num">02 / PATTERNS</p>
+    <h2>repeat() per gap</h2>
+    <p class="desc">
+      Just like grid tracks, <code>repeat()</code> varies the rule gap-by-gap.
+      Here every third column gap is thick — the Sudoku trick — without hard-coding
+      column counts.
+    </p>
+
+    <div class="specimen">
+      <div class="demo-pattern">
+        <div class="cell">·</div><div class="cell">·</div><div class="cell">·</div>
+        <div class="cell">·</div><div class="cell">·</div><div class="cell">·</div>
+        <div class="cell">·</div><div class="cell">·</div><div class="cell">·</div>
+        <div class="cell">·</div><div class="cell">·</div><div class="cell">·</div>
+        <div class="cell">·</div><div class="cell">·</div><div class="cell">·</div>
+        <div class="cell">·</div><div class="cell">·</div><div class="cell">·</div>
+      </div>
+    </div>
+
+<pre><span class="k">column-rule-style</span>: <span class="v">solid</span>;
+<span class="k">column-rule-color</span>: <span class="v">#2f4fd6</span>;
+<span class="k">column-rule-width</span>: <span class="v">repeat(2, 1px) 4px repeat(2, 1px)</span>;
+                   <span class="c">/* thin thin  THICK  thin thin … */</span></pre>
+  </section>
+
+  <!-- ============ 3 ============ -->
+  <section>
+    <p class="num">03 / FLEXBOX</p>
+    <h2>column-rule on a wrapping flex row</h2>
+    <p class="desc">
+      The classic nav / inline-list divider. <code>column-rule</code> paints between
+      items and disappears wherever a line wraps — no trailing separators to strip off.
+    </p>
+
+    <div class="specimen">
+      <div class="demo-flex">
+        <div class="cell">Home</div><div class="cell">Docs</div>
+        <div class="cell">Pricing</div><div class="cell">Changelog</div>
+        <div class="cell">Blog</div><div class="cell">Support</div>
+        <div class="cell">Status</div>
+      </div>
+    </div>
+
+<pre><span class="k">.nav</span> {
+  <span class="k">display</span>: <span class="v">flex</span>; <span class="k">flex-wrap</span>: <span class="v">wrap</span>;
+  <span class="k">gap</span>: <span class="v">14px 28px</span>;
+  <span class="k">column-rule</span>: <span class="v">1px solid #5a5e66</span>;
+}</pre>
+  </section>
+
+  <!-- ============ 4 ============ -->
+  <section>
+    <p class="num">04 / INTERSECTIONS</p>
+    <h2>rule-break</h2>
+    <p class="desc">
+      Where blue column rules cross orange row rules, <code>rule-break</code> decides
+      what happens. <code>normal</code> breaks at T-junctions, <code>intersection</code>
+      breaks at every crossing, <code>none</code> runs straight through.
+    </p>
+
+    <div class="specimen">
+      <div class="break-grid">
+        <div>
+          <div class="break-row demo-break-normal">
+            <div class="cell"></div><div class="cell"></div><div class="cell"></div>
+            <div class="cell"></div><div class="cell"></div><div class="cell"></div>
+          </div>
+          <p class="break-cap">normal</p>
+        </div>
+        <div>
+          <div class="break-row demo-break-intersection">
+            <div class="cell"></div><div class="cell"></div><div class="cell"></div>
+            <div class="cell"></div><div class="cell"></div><div class="cell"></div>
+          </div>
+          <p class="break-cap">intersection</p>
+        </div>
+        <div>
+          <div class="break-row demo-break-none">
+            <div class="cell"></div><div class="cell"></div><div class="cell"></div>
+            <div class="cell"></div><div class="cell"></div><div class="cell"></div>
+          </div>
+          <p class="break-cap">none</p>
+        </div>
+      </div>
+    </div>
+
+<pre><span class="k">column-rule</span>: <span class="v">3px solid #2f4fd6</span>;
+<span class="k">row-rule</span>:    <span class="v">3px solid #d9531e</span>;
+<span class="k">column-rule-break</span>: <span class="v">intersection</span>;  <span class="c">/* normal | intersection | none */</span></pre>
+  </section>
+
+  <!-- ============ 5 ============ -->
+  <section>
+    <p class="num">05 / INSET — interactive</p>
+    <h2>rule-inset</h2>
+    <p class="desc">
+      Pull the rules inward from the ends of each gap so they don't run flush to the
+      edges. Drag to see the segments shrink toward their centres.
+    </p>
+
+    <div class="specimen">
+      <div class="demo-inset" id="inset">
+        <div class="cell"></div><div class="cell"></div><div class="cell"></div>
+        <div class="cell"></div><div class="cell"></div><div class="cell"></div>
+      </div>
+      <div class="controls">
+        <div class="ctl">
+          <label>rule-inset <b id="inset-val">0px</b></label>
+          <input type="range" id="inset-range" min="0" max="22" value="0">
+        </div>
+      </div>
+    </div>
+
+<pre><span class="k">column-rule</span>: <span class="v">2px solid #2f4fd6</span>;
+<span class="k">row-rule</span>:    <span class="v">2px solid #2f4fd6</span>;
+<span class="k">rule-inset</span>: <span class="v">8px</span>;  <span class="c">/* shrink every rule 8px in from both ends */</span></pre>
+  </section>
+
+  <!-- ============ 6 ============ -->
+  <section id="support-section">
+    <p class="num">06 / AVAILABILITY</p>
+    <h2>Browser support</h2>
+    <p class="desc">
+      Live data pulled from caniuse in your browser, via the
+      <code>mdn-css_properties_row-rule</code> feature. If the live table can't
+      load that brand-new entry, a snapshot table appears instead.
+    </p>
+
+    <div class="specimen">
+      <!-- caniuse live widgets (rendered in the visitor's browser).
+           This embed uses caniuse + MDN + web-features data under one ID
+           namespace, so the MDN-only feature resolves with the MDN slug. -->
+
+      <!-- Per-version support table.
+           theme pinned to light: the specimen card is always light, so the
+           widget's default "auto" (which follows the visitor's OS scheme) would
+           paint white text on this light card in dark mode → invisible. -->
+      <p class="ciu-embed"
+         data-feature="mdn-css_properties_row-rule"
+         data-past="2" data-future="1" data-theme="light"></p>
+
+      <!-- static fallback, revealed only if the live embed doesn't render -->
+      <div id="ciu-fallback" hidden>
+        <table class="support-table">
+          <caption>Gap decorations — snapshot, June 2026</caption>
+          <thead>
+            <tr><th>Browser</th><th>Support</th><th>Since</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Chrome</td>        <td class="yes">✓ Supported</td>     <td class="since">149</td></tr>
+            <tr><td>Edge</td>          <td class="yes">✓ Supported</td>     <td class="since">149</td></tr>
+            <tr><td>Opera / Chromium</td><td class="partial">~ Tracks Chromium</td><td class="since">≥ 149 base</td></tr>
+            <tr><td>Firefox</td>       <td class="no">✗ Not supported</td>  <td class="since">—</td></tr>
+            <tr><td>Safari</td>        <td class="no">✗ Not in stable</td>  <td class="since">preview only</td></tr>
+            <tr><td>Chrome Android</td><td class="yes">✓ Supported</td>     <td class="since">149</td></tr>
+            <tr><td>Safari iOS</td>    <td class="no">✗ Not in stable</td>  <td class="since">—</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="ciu-note">
+        <span class="badge">Limited availability · not yet Baseline</span>
+        <a href="https://caniuse.com/mdn-css_properties_row-rule">caniuse.com</a>
+        <a href="https://webstatus.dev/features/gap-decorations">webstatus.dev</a>
+      </p>
+    </div>
+  </section>
+
+  <footer>
+    Open in Chrome / Edge 149+ to see rendered rules · spec:
+    <a href="https://www.w3.org/TR/css-gaps-1/">w3.org/TR/css-gaps-1</a> ·
+    not yet Baseline — keep a border fallback for Firefox &amp; Safari.
+  </footer>
+
+</div>
+
+<script>
+  // ---- browser-support detection ----
+  const banner = document.getElementById('support');
+  const supported = CSS.supports('row-rule', '1px solid black');
+  if (supported) {
+    banner.className = 'support ok';
+    banner.innerHTML = '<b>✓ Your browser supports gap decorations.</b> The rules below are real, not images.';
+  } else {
+    banner.className = 'support no';
+    banner.innerHTML = '<b>✗ This browser does not support gap decorations.</b> Gaps will render empty — open in Chrome / Edge 149+.';
+  }
+
+  // ---- demo 1 controls ----
+  const g1 = document.getElementById('g1');
+  const bind = (id, prop, suffix, labelId) => {
+    const el = document.getElementById(id);
+    const out = document.getElementById(labelId);
+    const apply = () => {
+      const v = el.value + (suffix || '');
+      g1.style.setProperty(prop, v);
+      if (out) out.textContent = v;
+    };
+    el.addEventListener('input', apply);
+    apply();
+  };
+  bind('g1-w',   '--g1-w',   'px', 'g1-w-val');
+  bind('g1-gap', '--g1-gap', 'px', 'g1-gap-val');
+
+  const style = document.getElementById('g1-style');
+  style.addEventListener('change', () => g1.style.setProperty('--g1-style', style.value));
+
+  // ---- demo 5 control ----
+  const inset = document.getElementById('inset');
+  const insetRange = document.getElementById('inset-range');
+  const insetVal = document.getElementById('inset-val');
+  insetRange.addEventListener('input', () => {
+    const v = insetRange.value + 'px';
+    inset.style.setProperty('--inset', v);
+    insetVal.textContent = v;
+  });
+
+  // ---- caniuse widgets + graceful fallback ----
+  // pengzhanbo's embed pulls caniuse + MDN + web-features data and renders an
+  // iframe per widget. Gap decorations only exists as an MDN feature, which this
+  // embed supports (the older bitsofco embed does not). If the widgets still
+  // don't render, the snapshot table below is revealed.
+  (function loadCaniuse() {
+    const s = document.createElement('script');
+    s.type = 'module';
+    s.src = 'https://caniuse-embed.vercel.app/embed.js';
+    s.onerror = revealFallback;
+    document.body.appendChild(s);
+
+    function revealFallback() {
+      document.getElementById('ciu-fallback').hidden = false;
+    }
+    // If no widget has injected an iframe after a grace period, fall back.
+    setTimeout(() => {
+      const rendered = document.querySelector('.ciu-embed iframe');
+      if (!rendered) revealFallback();
+    }, 3500);
+  })();
+</script>
+</body>
+</html>
