@@ -85,15 +85,6 @@
     color: var(--accent); transform: translateX(4px);
   }
 
-  /* loading / error / empty states */
-  .state {
-    font-family: "JetBrains Mono", monospace; font-size: 13px;
-    color: var(--ink-soft); padding: 20px 22px;
-    border: 1px dashed var(--line); border-radius: 12px; background: var(--panel);
-  }
-  .state a { color: var(--accent); }
-  .demo-list[aria-busy="true"] .skeleton { opacity: 0.6; }
-
   footer {
     margin-top: 56px; padding-top: 24px; border-top: 1px solid var(--line);
     font-family: "JetBrains Mono", monospace; font-size: 12px; color: var(--ink-soft);
@@ -115,19 +106,14 @@
     <p class="eyebrow">Index · CSS demos</p>
     <h1>CSS, under glass.</h1>
     <p class="lede">
-      Each page isolates one modern CSS feature so you can poke at it in the
-      open. This list builds itself from whatever <code>.html</code> files live
-      on the branch — add a new one and it shows up here.
+      Each page isolates one modern CSS feature so you can poke at it in the open.
     </p>
   </header>
 
   <main>
-    <!-- Progressive enhancement: these static entries render even with no JS or
-         if the GitHub API is unreachable. On load, the script replaces the whole
-         list with an auto-discovered, <title>-enriched version. -->
-    <ul id="index" class="demo-list" aria-busy="true">
+    <ul class="demo-list">
       <li>
-        <a class="demo-card skeleton" href="gap-decorations.html">
+        <a class="demo-card" href="gap-decorations.html">
           <span class="idx">01</span>
           <span class="body">
             <h2>CSS Gap Decorations — a working specimen</h2>
@@ -136,104 +122,24 @@
           <span class="arrow" aria-hidden="true">&rarr;</span>
         </a>
       </li>
+      <li>
+        <a class="demo-card" href="gap-decorations-advanced.html">
+          <span class="idx">02</span>
+          <span class="body">
+            <h2>CSS Gap Decorations II — spanning, paint order, patterns</h2>
+            <span class="file">gap-decorations-advanced.html</span>
+          </span>
+          <span class="arrow" aria-hidden="true">&rarr;</span>
+        </a>
+      </li>
     </ul>
-    <p id="state" class="state" hidden></p>
   </main>
 
   <footer>
-    Auto-generated index · drop a new <code>.html</code> file on the
-    <a href="https://github.com/moorthy-g/css-demo/tree/gh-pages">gh-pages branch</a>
-    and it appears here on the next load.
+    A hand-kept index of small CSS specimens on the
+    <a href="https://github.com/moorthy-g/css-demo/tree/gh-pages">gh-pages branch</a>.
   </footer>
 
 </div>
-
-<script>
-  // Auto-discover demo pages from the repo's gh-pages branch via the GitHub
-  // contents API, then enrich each with its <title>. Same-origin title fetches
-  // keep it off the (rate-limited) API. Everything degrades gracefully: if the
-  // API call fails, the static list above stays put.
-  const REPO    = 'moorthy-g/css-demo';
-  const BRANCH  = 'gh-pages';
-  const EXCLUDE = new Set(['index.html']);
-
-  const listEl  = document.getElementById('index');
-  const stateEl = document.getElementById('state');
-
-  function showState(html) { stateEl.hidden = false; stateEl.innerHTML = html; }
-
-  function prettify(file) {
-    return file.replace(/\.html?$/i, '')
-               .replace(/[-_]+/g, ' ')
-               .replace(/\b\w/g, c => c.toUpperCase());
-  }
-
-  function makeCard(index, title, file) {
-    const li = document.createElement('li');
-    const a  = document.createElement('a');
-    a.className = 'demo-card';
-    a.href = file;
-    a.innerHTML =
-      '<span class="idx"></span>' +
-      '<span class="body"><h2></h2><span class="file"></span></span>' +
-      '<span class="arrow" aria-hidden="true">&rarr;</span>';
-    a.querySelector('.idx').textContent  = String(index + 1).padStart(2, '0');
-    a.querySelector('h2').textContent    = title;
-    a.querySelector('.file').textContent = file;
-    li.appendChild(a);
-    return li;
-  }
-
-  async function fetchTitle(file) {
-    try {
-      const res = await fetch(file, { cache: 'no-cache' });
-      if (!res.ok) return null;
-      const html = await res.text();
-      const m = html.match(/<title>([\s\S]*?)<\/title>/i);
-      return m ? m[1].trim() : null;
-    } catch { return null; }
-  }
-
-  (async function build() {
-    let files;
-    try {
-      const res = await fetch(
-        `https://api.github.com/repos/${REPO}/contents?ref=${BRANCH}`,
-        { headers: { Accept: 'application/vnd.github+json' } }
-      );
-      if (!res.ok) throw new Error('GitHub API ' + res.status);
-      const data = await res.json();
-      files = data
-        .filter(f => f.type === 'file'
-                  && /\.html?$/i.test(f.name)
-                  && !EXCLUDE.has(f.name.toLowerCase()))
-        .map(f => f.name)
-        .sort((a, b) => a.localeCompare(b));
-    } catch (err) {
-      // Keep the static fallback list; just note auto-discovery failed.
-      listEl.removeAttribute('aria-busy');
-      listEl.querySelectorAll('.skeleton').forEach(el => el.classList.remove('skeleton'));
-      showState(
-        `Couldn't auto-load the file list (${err.message}). Showing known demos — ` +
-        `<a href="https://github.com/${REPO}/tree/${BRANCH}">browse the branch</a>.`
-      );
-      return;
-    }
-
-    if (!files.length) {
-      listEl.innerHTML = '';
-      listEl.removeAttribute('aria-busy');
-      showState('No demos on the branch yet. Add an <code>.html</code> file to get started.');
-      return;
-    }
-
-    const titles = await Promise.all(files.map(fetchTitle));
-    listEl.innerHTML = '';
-    files.forEach((file, i) => {
-      listEl.appendChild(makeCard(i, titles[i] || prettify(file), file));
-    });
-    listEl.removeAttribute('aria-busy');
-  })();
-</script>
 </body>
 </html>

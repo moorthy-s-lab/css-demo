@@ -1,8 +1,8 @@
 # css-demo — project instructions
 
 A collection of small, self-contained CSS demo pages, published via GitHub
-Pages from the `gh-pages` branch. `index.html` is an auto-generating index that
-lists the demo `.html` files (discovered through the GitHub contents API).
+Pages from the `gh-pages` branch. `index.html` is a plain, hand-kept index that
+links to the demo `.html` files.
 
 ## Git / commits
 
@@ -17,5 +17,6 @@ lists the demo `.html` files (discovered through the GitHub contents API).
 - Each demo is a single standalone `.html` file (inline `<style>`/`<script>`),
   using the shared "drafting-paper" palette and the Space Grotesk / Hanken
   Grotesk / JetBrains Mono type set.
-- New demos: just add `<name>.html` to the branch — `index.html` picks it up
-  automatically and uses the page's `<title>` as its label.
+- New demos: add `<name>.html` to the branch, then add a matching `<li>` card to
+  `index.html` (copy an existing one — bump the `idx`, set the `<h2>`, `href`, and
+  `.file`).

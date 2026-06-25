@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CSS Gap Decorations II — spanning, paint order, patterns</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Hanken+Grotesk:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper:    #e9eae4;   /* drafting-paper ground            */
+    --panel:    #f4f5f0;   /* raised specimen card             */
+    --ink:      #1a1d22;   /* near-black text + structural ink */
+    --ink-soft: #5a5e66;   /* secondary text                  */
+    --line:     #c3c5bd;   /* hairline dividers               */
+    --accent:   #2f4fd6;   /* the "live" rule colour          */
+    --accent-2: #d9531e;   /* secondary rule colour           */
+    --accent-3: #1d9a6c;   /* tertiary (patterns)             */
+    --code-bg:  #1c1f26;
+    --code-fg:  #e6e7ea;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: "Hanken Grotesk", system-ui, sans-serif;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap { max-width: 880px; margin: 0 auto; padding: 48px 24px 96px; }
+
+  /* ---------- masthead ---------- */
+  header { margin-bottom: 8px; }
+  .eyebrow {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--ink-soft); margin: 0 0 14px;
+  }
+  .eyebrow a { color: var(--accent); text-decoration: none; }
+  h1 {
+    font-family: "Space Grotesk", sans-serif;
+    font-weight: 700; font-size: clamp(34px, 6vw, 56px);
+    line-height: 1.02; letter-spacing: -0.02em; margin: 0 0 16px;
+  }
+  .lede { font-size: 18px; color: var(--ink-soft); max-width: 58ch; margin: 0; }
+
+  /* ---------- support banner ---------- */
+  .support {
+    margin: 28px 0 0; padding: 14px 18px; border-radius: 10px;
+    font-family: "JetBrains Mono", monospace; font-size: 13px;
+    display: flex; gap: 10px; align-items: center;
+  }
+  .support.ok   { background: #e3efe4; color: #1d5b2c; border: 1px solid #b6d8bb; }
+  .support.no   { background: #f6e4dc; color: #8a3415; border: 1px solid #e3bca8; }
+  .support b { font-weight: 500; }
+
+  /* ---------- section scaffolding ---------- */
+  section { margin-top: 56px; }
+  .num {
+    font-family: "JetBrains Mono", monospace; font-size: 12px;
+    letter-spacing: 0.1em; color: var(--accent); margin: 0 0 6px;
+  }
+  h2 {
+    font-family: "Space Grotesk", sans-serif; font-weight: 600;
+    font-size: 24px; letter-spacing: -0.01em; margin: 0 0 8px;
+  }
+  .desc { color: var(--ink-soft); margin: 0 0 22px; max-width: 62ch; }
+  .desc code, .lede code { font-family: "JetBrains Mono", monospace; font-size: 0.9em; }
+
+  .specimen {
+    background: var(--panel); border: 1px solid var(--line);
+    border-radius: 14px; padding: 26px;
+  }
+
+  /* item styling shared across demos */
+  .cell {
+    background: var(--paper);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: "JetBrains Mono", monospace; font-size: 13px;
+    color: var(--ink-soft); min-height: 56px;
+  }
+
+  /* ---------- controls (reused) ---------- */
+  .controls {
+    margin-top: 20px; padding-top: 20px; border-top: 1px dashed var(--line);
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 16px 22px;
+  }
+  .ctl { display: flex; flex-direction: column; gap: 6px; }
+  .ctl label {
+    font-family: "JetBrains Mono", monospace; font-size: 11px;
+    letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-soft);
+    display: flex; justify-content: space-between; align-items: center; gap: 8px;
+  }
+  .ctl label b { color: var(--accent); font-weight: 500; }
+  input[type="range"] { width: 100%; accent-color: var(--accent); }
+  input[type="checkbox"] { accent-color: var(--accent); width: 15px; height: 15px; }
+  select {
+    font-family: "JetBrains Mono", monospace; font-size: 13px;
+    padding: 7px 9px; border: 1px solid var(--line); border-radius: 7px;
+    background: var(--paper); color: var(--ink);
+  }
+
+  /* ---------- experimental note ---------- */
+  .exp-note {
+    font-family: "JetBrains Mono", monospace; font-size: 11px; line-height: 1.5;
+    color: #8a5a15; background: #f7efe0; border: 1px solid #e6d3a8;
+    border-radius: 8px; padding: 8px 12px; margin: 16px 0 0;
+    display: flex; gap: 9px; align-items: flex-start;
+  }
+  .exp-note::before { content: "⚗"; font-size: 13px; line-height: 1.3; }
+
+  /* ===== 01 — spanning items / T-junctions ===== */
+  .demo-span {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    grid-auto-rows: 60px; gap: 22px;
+    column-rule: 3px solid var(--accent);
+    row-rule:    3px solid var(--accent-2);
+    rule-break: var(--span-break, intersection);
+  }
+  .demo-span .wide { grid-column: span 2; }
+
+  /* ===== 02 — rule-overlap (paint order) ===== */
+  .demo-overlap {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(2, 56px); gap: 30px;
+    column-rule: 14px solid var(--accent);
+    row-rule:    14px solid var(--accent-2);
+    rule-overlap: var(--overlap, row-over-column);
+  }
+
+  /* ===== 03 — per-gap colour & style ===== */
+  .demo-pattern2 {
+    display: grid; grid-template-columns: repeat(8, 1fr);
+    grid-template-rows: repeat(2, 46px); gap: 9px;
+    column-rule-width: 4px;
+    /* per-gap lists are COMMA-separated — one value per column gap (7 gaps) */
+    column-rule-style: solid, double, solid, double, solid, double, solid;
+    column-rule-color: var(--accent), var(--accent-2), var(--accent-3),
+                       var(--accent), var(--accent-2), var(--accent-3), var(--accent);
+    row-rule: 2px solid var(--line);
+  }
+  .demo-pattern2 .cell { min-height: auto; font-size: 11px; }
+
+  /* ===== 04 — granular insets + overlap-join ===== */
+  .demo-inset2 {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(2, 56px); gap: 34px;
+    column-rule: 3px solid var(--accent);
+    row-rule:    3px solid var(--accent);
+    rule-inset-cap:      var(--cap, 0px);
+    rule-inset-junction: var(--junction-mode, var(--junction, 0px));
+  }
+
+  /* ===== 05 — multi-column ===== */
+  .demo-multicol {
+    columns: 3; column-gap: 30px; font-size: 13.5px; color: var(--ink-soft);
+    column-rule-style: solid; column-rule-width: 2px;
+    /* per-gap colour now works on multicol too — the two gaps differ */
+    column-rule-color: var(--accent), var(--accent-2);
+  }
+  .demo-multicol p { margin: 0 0 11px; }
+  .demo-multicol p:last-child { margin-bottom: 0; }
+
+  /* ===== 06 — row-rule on a wrapping flex ===== */
+  .demo-flexrow {
+    display: flex; flex-wrap: wrap; gap: 16px 22px;
+    column-rule: 1px solid var(--line);
+    row-rule:    2px dashed var(--accent);
+  }
+  .demo-flexrow .cell { padding: 7px 14px; min-height: auto; background: transparent; }
+
+  /* ===== 07 — rule-visibility-items ===== */
+  .demo-vis {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    grid-template-rows: repeat(2, 56px); gap: 20px;
+    column-rule: 2px solid var(--accent);
+    row-rule:    2px solid var(--accent);
+    rule-visibility-items: var(--vis, normal);
+  }
+  .demo-vis .ghost { background: transparent; border: 1px dashed var(--line); color: var(--line); }
+
+  /* ===== 08 — calendar ===== */
+  .demo-cal {
+    display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px;
+    column-rule-style: solid; column-rule-width: 1px;
+    /* accent the gaps that flank the weekend (after Sun, before Sat) */
+    column-rule-color: var(--accent-2), var(--line), var(--line), var(--line), var(--line), var(--accent-2);
+    row-rule-style: solid; row-rule-color: var(--line);
+    row-rule-width: 2px, repeat(6, 1px);   /* divider under the weekday header */
+  }
+  .cal-cell {
+    min-height: 36px; display: flex; align-items: flex-start; justify-content: flex-end;
+    padding: 5px 7px; font-family: "JetBrains Mono", monospace; font-size: 12px;
+    color: var(--ink-soft); background: var(--paper); border-radius: 6px;
+  }
+  .cal-h {
+    justify-content: center; align-items: center; min-height: 22px;
+    color: var(--ink); font-weight: 600; background: transparent;
+    font-family: "JetBrains Mono", monospace; font-size: 11px;
+  }
+  .cal-cell.wknd  { background: #f1e7df; color: var(--accent-2); }
+  .cal-cell.blank { background: transparent; }
+
+  /* ===== 09 — animated rules ===== */
+  @property --arule-w { syntax: "<length>"; inherits: true; initial-value: 1px; }
+  @property --arule-c { syntax: "<color>";  inherits: true; initial-value: #c3c5bd; }
+  .demo-anim {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    grid-template-rows: repeat(2, 56px); gap: 24px;
+    --arule-w: 1px; --arule-c: var(--line);
+    column-rule: var(--arule-w) solid var(--arule-c);
+    row-rule:    var(--arule-w) solid var(--arule-c);
+    transition: --arule-w .55s ease, --arule-c .55s ease;
+  }
+  .demo-anim:hover { --arule-w: 6px; --arule-c: var(--accent); }
+  .demo-hint {
+    font-family: "JetBrains Mono", monospace; font-size: 11px;
+    color: var(--ink-soft); margin: 14px 0 0; text-align: center;
+  }
+  @media (prefers-reduced-motion: reduce) { .demo-anim { transition: none; } }
+
+  /* ===== 10 — @supports fallback ===== */
+  .pe-row { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+  @media (max-width: 560px) { .pe-row { grid-template-columns: 1fr; } }
+  .pe-cap {
+    font-family: "JetBrains Mono", monospace; font-size: 11px;
+    color: var(--ink-soft); margin: 0 0 10px; text-align: center;
+  }
+  .pe-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(2, 56px); gap: 16px;
+  }
+  .pe-grid.live    { column-rule: 2px solid var(--accent); row-rule: 2px solid var(--accent); }
+  .pe-grid.fallback .cell { box-shadow: inset 0 0 0 1px var(--line); }
+
+  /* ---------- code blocks ---------- */
+  pre {
+    margin: 18px 0 0; background: var(--code-bg); color: var(--code-fg);
+    border-radius: 10px; padding: 18px 20px; overflow-x: auto;
+    font-family: "JetBrains Mono", monospace; font-size: 12.5px; line-height: 1.7;
+  }
+  pre .k { color: #8fb6ff; }  /* property */
+  pre .v { color: #f0b67f; }  /* value    */
+  pre .c { color: #6b7280; }  /* comment  */
+
+  /* ---------- caniuse support ---------- */
+  .ciu-embed { margin: 0 0 14px; }
+  .ciu-note {
+    font-family: "JetBrains Mono", monospace; font-size: 12px;
+    color: var(--ink-soft); margin: 14px 0 0; display: flex;
+    flex-wrap: wrap; gap: 6px 14px; align-items: center;
+  }
+  .ciu-note a { color: var(--accent); }
+  .badge {
+    font-family: "JetBrains Mono", monospace; font-size: 11px;
+    padding: 3px 8px; border-radius: 999px; background: #f6e4dc;
+    color: #8a3415; border: 1px solid #e3bca8;
+  }
+  .support-table { width: 100%; border-collapse: collapse; }
+  .support-table caption {
+    font-family: "JetBrains Mono", monospace; font-size: 11px;
+    letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-soft);
+    text-align: left; margin-bottom: 14px;
+  }
+  .support-table th, .support-table td {
+    text-align: left; padding: 10px 12px; font-size: 14px;
+    border-bottom: 1px solid var(--line);
+  }
+  .support-table th {
+    font-family: "JetBrains Mono", monospace; font-size: 11px;
+    letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-soft);
+    font-weight: 500;
+  }
+  .support-table td:first-child { font-weight: 600; }
+  .yes { color: #1d5b2c; } .no { color: #8a3415; } .partial { color: #8a5a15; }
+  .since { font-family: "JetBrains Mono", monospace; font-size: 13px; color: var(--ink-soft); }
+
+  footer {
+    margin-top: 72px; padding-top: 24px; border-top: 1px solid var(--line);
+    font-family: "JetBrains Mono", monospace; font-size: 12px; color: var(--ink-soft);
+  }
+  footer a { color: var(--accent); }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <p class="eyebrow">CSS Gap Decorations · Module Level 1 · <a href="gap-decorations.html">← Part I: the basics</a></p>
+    <h1>Past the basics.</h1>
+    <p class="lede">
+      Part I drew rules in the gaps. This page pushes the rest of the spec:
+      <code>rule-overlap</code>, per-gap colour &amp; style, granular insets,
+      spanning-item T-junctions, multicol, flex line rules, animation,
+      and the <code>@supports</code> fallback you actually ship.
+    </p>
+    <div id="support" class="support"></div>
+  </header>
+
+  <!-- ============ 01 ============ -->
+  <section>
+    <p class="num">01 / SPANNING ITEMS</p>
+    <h2>T-junctions around a span</h2>
+    <p class="desc">
+      The spec's signature case. When an item spans tracks, a column rule can't
+      run through it — it stops at the item's edge, where the continuing row rule
+      forms a <b>T</b>. Toggle <code>rule-break</code> to watch the segments
+      reroute around the two wide cells.
+    </p>
+
+    <div class="specimen">
+      <div class="demo-span" id="span-grid">
+        <div class="cell">1</div>
+        <div class="cell wide">2 · spans 2</div>
+        <div class="cell wide">3 · spans 2</div>
+        <div class="cell">4</div>
+        <div class="cell">5</div>
+        <div class="cell">6</div>
+        <div class="cell">7</div>
+      </div>
+
+      <div class="controls">
+        <div class="ctl">
+          <label>rule-break</label>
+          <select id="span-break-sel">
+            <option value="intersection" selected>intersection</option>
+            <option value="normal">normal</option>
+            <option value="none">none</option>
+            <option value="spanning-item">spanning-item (exp)</option>
+          </select>
+        </div>
+      </div>
+
+      <p class="exp-note" id="exp-span" hidden>
+        <span>This browser doesn't recognise <code>rule-break: spanning-item</code>; that
+        option falls back to <code>normal</code>. The T-junctions still form under
+        <code>intersection</code>.</span>
+      </p>
+    </div>
+
+<pre><span class="k">.grid</span> {
+  <span class="k">grid-template-columns</span>: <span class="v">repeat(3, 1fr)</span>;
+  <span class="k">column-rule</span>: <span class="v">3px solid #2f4fd6</span>;
+  <span class="k">row-rule</span>:    <span class="v">3px solid #d9531e</span>;
+  <span class="k">rule-break</span>:  <span class="v">intersection</span>;
+}
+<span class="k">.grid .wide</span> { <span class="k">grid-column</span>: <span class="v">span 2</span>; }  <span class="c">/* column rule stops here → T */</span></pre>
+  </section>
+
+  <!-- ============ 02 ============ -->
+  <section>
+    <p class="num">02 / PAINT ORDER</p>
+    <h2>rule-overlap</h2>
+    <p class="desc">
+      Where a thick column rule crosses a thick row rule, one has to sit on top.
+      <code>rule-overlap</code> picks the winner — <code>row-over-column</code> or
+      <code>column-over-row</code>. Toggle it and watch the crossings flip.
+    </p>
+
+    <div class="specimen">
+      <div class="demo-overlap" id="overlap-grid">
+        <div class="cell"></div><div class="cell"></div><div class="cell"></div>
+        <div class="cell"></div><div class="cell"></div><div class="cell"></div>
+      </div>
+
+      <div class="controls">
+        <div class="ctl">
+          <label>rule-overlap</label>
+          <select id="overlap-sel">
+            <option value="row-over-column" selected>row-over-column</option>
+            <option value="column-over-row">column-over-row</option>
+          </select>
+        </div>
+      </div>
+
+      <p class="exp-note" id="exp-overlap" hidden>
+        <span>This browser doesn't recognise <code>rule-overlap</code> yet — the
+        toggle has no visible effect here.</span>
+      </p>
+    </div>
+
+<pre><span class="k">column-rule</span>: <span class="v">14px solid #2f4fd6</span>;
+<span class="k">row-rule</span>:    <span class="v">14px solid #d9531e</span>;
+<span class="k">rule-overlap</span>: <span class="v">row-over-column</span>;  <span class="c">/* | column-over-row */</span></pre>
+  </section>
+
+  <!-- ============ 03 ============ -->
+  <section>
+    <p class="num">03 / PER-GAP PATTERNS</p>
+    <h2>colour &amp; style, gap by gap</h2>
+    <p class="desc">
+      Part I varied only the <i>width</i> with <code>repeat()</code>. The same
+      <code>&lt;gap-rule-list&gt;</code> grammar drives colour and style too — so
+      every column gap can cycle through a palette and alternate
+      <code>solid</code> / <code>double</code>, no <code>nth-child</code> in sight.
+    </p>
+
+    <div class="specimen">
+      <div class="demo-pattern2">
+        <div class="cell">·</div><div class="cell">·</div><div class="cell">·</div><div class="cell">·</div>
+        <div class="cell">·</div><div class="cell">·</div><div class="cell">·</div><div class="cell">·</div>
+        <div class="cell">·</div><div class="cell">·</div><div class="cell">·</div><div class="cell">·</div>
+        <div class="cell">·</div><div class="cell">·</div><div class="cell">·</div><div class="cell">·</div>
+      </div>
+    </div>
+
+<pre><span class="k">column-rule-width</span>: <span class="v">4px</span>;
+<span class="c">/* per-gap lists are COMMA-separated — one value per gap */</span>
+<span class="k">column-rule-style</span>: <span class="v">solid, double, solid, double, …</span>;
+<span class="k">column-rule-color</span>: <span class="v">#2f4fd6, #d9531e, #1d9a6c, …</span>;</pre>
+  </section>
+
+  <!-- ============ 04 ============ -->
+  <section>
+    <p class="num">04 / INSETS — interactive</p>
+    <h2>cap vs junction insets</h2>
+    <p class="desc">
+      Part I's <code>rule-inset</code> trimmed every end equally. The longhands
+      split it: <code>rule-inset-cap</code> pulls rules in only at the
+      container's outer edges, while <code>rule-inset-junction</code> trims them
+      only where they meet a crossing rule. Flip <code>overlap-join</code> to weld
+      the corners back together.
+    </p>
+
+    <div class="specimen">
+      <div class="demo-inset2" id="inset2-grid">
+        <div class="cell"></div><div class="cell"></div><div class="cell"></div>
+        <div class="cell"></div><div class="cell"></div><div class="cell"></div>
+      </div>
+
+      <div class="controls">
+        <div class="ctl">
+          <label>rule-inset-cap <b id="cap-val">0px</b></label>
+          <input type="range" id="cap-range" min="0" max="20" value="0">
+        </div>
+        <div class="ctl">
+          <label>rule-inset-junction <b id="junction-val">0px</b></label>
+          <input type="range" id="junction-range" min="0" max="20" value="0">
+        </div>
+        <div class="ctl">
+          <label for="join-chk">junction: overlap-join</label>
+          <input type="checkbox" id="join-chk">
+        </div>
+      </div>
+
+      <p class="exp-note" id="exp-inset" hidden>
+        <span>This browser doesn't recognise the
+        <code>rule-inset-cap</code> / <code>rule-inset-junction</code> longhands —
+        the sliders won't move the rules here.</span>
+      </p>
+    </div>
+
+<pre><span class="k">column-rule</span>: <span class="v">3px solid #2f4fd6</span>;
+<span class="k">row-rule</span>:    <span class="v">3px solid #2f4fd6</span>;
+<span class="k">rule-inset-cap</span>:      <span class="v">8px</span>;            <span class="c">/* trim at the outer edges  */</span>
+<span class="k">rule-inset-junction</span>: <span class="v">overlap-join</span>;   <span class="c">/* …or weld the crossings   */</span></pre>
+  </section>
+
+  <!-- ============ 05 ============ -->
+  <section>
+    <p class="num">05 / MULTICOL</p>
+    <h2>back home, with new powers</h2>
+    <p class="desc">
+      <code>column-rule</code> was born in multi-column layout — and the new model
+      folds it in. The classic single rule still works, but now it accepts the
+      per-gap list too: here the two gaps between three text columns carry
+      different colours.
+    </p>
+
+    <div class="specimen">
+      <div class="demo-multicol">
+        <p>Gap decorations move the job of drawing separators from the children to
+        the container. No per-item borders, no pseudo-elements, no counting.</p>
+        <p>In multicol the rule lives between text columns. Defaults differ from
+        grid: <code>column-rule-break</code> is <code>intersection</code>, while
+        <code>row-rule-break</code> is <code>none</code>, since the column gaps are
+        what matter here.</p>
+        <p>Because the value is a list, every column gap can be styled
+        independently — the same syntax you use across grid tracks.</p>
+        <p>Open this in Chrome or Edge 149+ and the two rules between these columns
+        are real paint, redrawn as the text reflows.</p>
+      </div>
+    </div>
+
+<pre><span class="k">.article</span> {
+  <span class="k">columns</span>: <span class="v">3</span>;
+  <span class="k">column-gap</span>: <span class="v">30px</span>;
+  <span class="k">column-rule-width</span>: <span class="v">2px</span>;
+  <span class="k">column-rule-color</span>: <span class="v">#2f4fd6, #d9531e</span>;  <span class="c">/* gap 1, gap 2 */</span>
+}</pre>
+  </section>
+
+  <!-- ============ 06 ============ -->
+  <section>
+    <p class="num">06 / FLEX, THE OTHER AXIS</p>
+    <h2>row-rule between wrapped lines</h2>
+    <p class="desc">
+      Part I put <code>column-rule</code> on a flex row. Its partner,
+      <code>row-rule</code>, draws between the <i>wrapped lines</i> — a horizontal
+      separator that appears only where the flex content breaks onto a new row.
+    </p>
+
+    <div class="specimen">
+      <div class="demo-flexrow">
+        <div class="cell">Overview</div><div class="cell">Components</div>
+        <div class="cell">Tokens</div><div class="cell">Patterns</div>
+        <div class="cell">Accessibility</div><div class="cell">Motion</div>
+        <div class="cell">Theming</div><div class="cell">Icons</div>
+        <div class="cell">Grid</div><div class="cell">Typography</div>
+        <div class="cell">Colour</div><div class="cell">Forms</div>
+        <div class="cell">Changelog</div><div class="cell">Roadmap</div>
+      </div>
+    </div>
+
+<pre><span class="k">.tags</span> {
+  <span class="k">display</span>: <span class="v">flex</span>; <span class="k">flex-wrap</span>: <span class="v">wrap</span>;
+  <span class="k">gap</span>: <span class="v">16px 22px</span>;
+  <span class="k">column-rule</span>: <span class="v">1px solid #c3c5bd</span>;
+  <span class="k">row-rule</span>:    <span class="v">2px dashed #2f4fd6</span>;  <span class="c">/* between wrapped lines */</span>
+}</pre>
+  </section>
+
+  <!-- ============ 07 ============ -->
+  <section>
+    <p class="num">07 / VISIBILITY</p>
+    <h2>rule-visibility-items</h2>
+    <p class="desc">
+      Not every gap wants a rule. <code>rule-visibility-items</code> controls
+      whether rules are drawn <code>between</code> items, <code>around</code> them
+      (including the outer edges), <code>all</code>, or the <code>normal</code>
+      default. The dashed cells below are placeholders to read the edges against.
+    </p>
+
+    <div class="specimen">
+      <div class="demo-vis" id="vis-grid">
+        <div class="cell ghost"></div><div class="cell">A</div><div class="cell">B</div><div class="cell ghost"></div>
+        <div class="cell ghost"></div><div class="cell">C</div><div class="cell">D</div><div class="cell ghost"></div>
+      </div>
+
+      <div class="controls">
+        <div class="ctl">
+          <label>rule-visibility-items</label>
+          <select id="vis-sel">
+            <option value="normal" selected>normal</option>
+            <option value="between">between</option>
+            <option value="around">around</option>
+            <option value="all">all</option>
+          </select>
+        </div>
+      </div>
+
+      <p class="exp-note" id="exp-vis" hidden>
+        <span>This browser doesn't recognise <code>rule-visibility-items</code> yet —
+        the toggle has no visible effect here.</span>
+      </p>
+    </div>
+
+<pre><span class="k">column-rule</span>: <span class="v">2px solid #2f4fd6</span>;
+<span class="k">row-rule</span>:    <span class="v">2px solid #2f4fd6</span>;
+<span class="k">rule-visibility-items</span>: <span class="v">between</span>;  <span class="c">/* normal | between | around | all */</span></pre>
+  </section>
+
+  <!-- ============ 08 ============ -->
+  <section>
+    <p class="num">08 / CALENDAR</p>
+    <h2>weekend rules for free</h2>
+    <p class="desc">
+      A month grid where the gaps do the work: a per-gap <code>column-rule-color</code>
+      list tints the two separators that flank the weekend, and a
+      <code>row-rule-width</code> list thickens the divider under the weekday header.
+    </p>
+
+    <div class="specimen">
+      <div class="demo-cal" id="cal-grid">
+        <div class="cal-cell cal-h">Sun</div><div class="cal-cell cal-h">Mon</div>
+        <div class="cal-cell cal-h">Tue</div><div class="cal-cell cal-h">Wed</div>
+        <div class="cal-cell cal-h">Thu</div><div class="cal-cell cal-h">Fri</div>
+        <div class="cal-cell cal-h">Sat</div>
+        <!-- day cells injected by script -->
+      </div>
+    </div>
+
+<pre><span class="k">.month</span> {
+  <span class="k">grid-template-columns</span>: <span class="v">repeat(7, 1fr)</span>;
+  <span class="k">column-rule-color</span>: <span class="v">#d9531e, #c3c5bd, #c3c5bd, #c3c5bd, #c3c5bd, #d9531e</span>;
+  <span class="k">row-rule-width</span>:    <span class="v">2px, repeat(6, 1px)</span>;  <span class="c">/* header divider */</span>
+}</pre>
+  </section>
+
+  <!-- ============ 09 ============ -->
+  <section>
+    <p class="num">09 / ANIMATION</p>
+    <h2>rules that move</h2>
+    <p class="desc">
+      Rules are paint — and paint can animate. Register the width and colour as
+      typed custom properties with <code>@property</code>, feed them into the rule
+      shorthand, and they interpolate. <b>Hover the grid</b> to thicken and ink the
+      lines; honours <code>prefers-reduced-motion</code>.
+    </p>
+
+    <div class="specimen">
+      <div class="demo-anim">
+        <div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div>
+        <div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div>
+      </div>
+      <p class="demo-hint">↑ hover to animate · or drive the same vars from <code>animation-timeline: scroll()</code></p>
+    </div>
+
+<pre><span class="k">@property</span> <span class="v">--rule-w</span> { <span class="k">syntax</span>: <span class="v">"&lt;length&gt;"</span>; <span class="k">inherits</span>: <span class="v">true</span>; <span class="k">initial-value</span>: <span class="v">1px</span>; }
+<span class="k">.grid</span> {
+  <span class="k">column-rule</span>: <span class="v">var(--rule-w) solid var(--rule-c)</span>;
+  <span class="k">row-rule</span>:    <span class="v">var(--rule-w) solid var(--rule-c)</span>;
+  <span class="k">transition</span>: <span class="v">--rule-w .55s ease, --rule-c .55s ease</span>;
+}
+<span class="k">.grid:hover</span> { <span class="k">--rule-w</span>: <span class="v">6px</span>; <span class="k">--rule-c</span>: <span class="v">#2f4fd6</span>; }</pre>
+  </section>
+
+  <!-- ============ 10 ============ -->
+  <section>
+    <p class="num">10 / FALLBACK</p>
+    <h2>the @supports you ship</h2>
+    <p class="desc">
+      Until this is Baseline, ship progressive enhancement. Guard the rules behind
+      <code>@supports (row-rule: …)</code>, and give non-supporting browsers a
+      border ring instead. Left is the real thing; right is the fallback, drawn
+      with <code>box-shadow</code> so you can see both at once.
+    </p>
+
+    <div class="specimen">
+      <div class="pe-row">
+        <div>
+          <p class="pe-cap">row-rule / column-rule</p>
+          <div class="pe-grid live">
+            <div class="cell"></div><div class="cell"></div><div class="cell"></div>
+            <div class="cell"></div><div class="cell"></div><div class="cell"></div>
+          </div>
+        </div>
+        <div>
+          <p class="pe-cap">border fallback</p>
+          <div class="pe-grid fallback">
+            <div class="cell"></div><div class="cell"></div><div class="cell"></div>
+            <div class="cell"></div><div class="cell"></div><div class="cell"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+<pre><span class="k">.grid</span> { <span class="k">display</span>: <span class="v">grid</span>; <span class="k">gap</span>: <span class="v">16px</span>; }
+
+<span class="c">/* progressive enhancement */</span>
+<span class="k">@supports</span> (<span class="k">row-rule</span>: <span class="v">1px solid black</span>) {
+  <span class="k">.grid</span> { <span class="k">column-rule</span>: <span class="v">2px solid #2f4fd6</span>; <span class="k">row-rule</span>: <span class="v">2px solid #2f4fd6</span>; }
+}
+<span class="k">@supports not</span> (<span class="k">row-rule</span>: <span class="v">1px solid black</span>) {
+  <span class="k">.grid > *</span> { <span class="k">box-shadow</span>: <span class="v">inset 0 0 0 1px #c3c5bd</span>; }
+}</pre>
+  </section>
+
+  <!-- ============ 11 ============ -->
+  <section id="support-section">
+    <p class="num">11 / AVAILABILITY</p>
+    <h2>Browser support</h2>
+    <p class="desc">
+      Live data pulled from caniuse in your browser, via the
+      <code>mdn-css_properties_row-rule</code> feature. If the live table can't
+      load that brand-new entry, a snapshot table appears instead. Note: the
+      newest sub-features here (<code>rule-overlap</code>,
+      <code>rule-visibility-items</code>) trail the base support below.
+    </p>
+
+    <div class="specimen">
+      <p class="ciu-embed"
+         data-feature="mdn-css_properties_row-rule"
+         data-past="2" data-future="1" data-theme="light"></p>
+
+      <div id="ciu-fallback" hidden>
+        <table class="support-table">
+          <caption>Gap decorations — snapshot, June 2026</caption>
+          <thead>
+            <tr><th>Browser</th><th>Support</th><th>Since</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Chrome</td>        <td class="yes">✓ Supported</td>     <td class="since">149</td></tr>
+            <tr><td>Edge</td>          <td class="yes">✓ Supported</td>     <td class="since">149</td></tr>
+            <tr><td>Opera / Chromium</td><td class="partial">~ Tracks Chromium</td><td class="since">≥ 149 base</td></tr>
+            <tr><td>Firefox</td>       <td class="no">✗ Not supported</td>  <td class="since">—</td></tr>
+            <tr><td>Safari</td>        <td class="no">✗ Not in stable</td>  <td class="since">preview only</td></tr>
+            <tr><td>Chrome Android</td><td class="yes">✓ Supported</td>     <td class="since">149</td></tr>
+            <tr><td>Safari iOS</td>    <td class="no">✗ Not in stable</td>  <td class="since">—</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="ciu-note">
+        <span class="badge">Limited availability · not yet Baseline</span>
+        <a href="https://caniuse.com/mdn-css_properties_row-rule">caniuse.com</a>
+        <a href="https://webstatus.dev/features/gap-decorations">webstatus.dev</a>
+      </p>
+    </div>
+  </section>
+
+  <footer>
+    Open in Chrome / Edge 149+ to see rendered rules ·
+    <a href="gap-decorations.html">← Part I: the basics</a> · spec:
+    <a href="https://www.w3.org/TR/css-gaps-1/">w3.org/TR/css-gaps-1</a> ·
+    not yet Baseline — keep a border fallback for Firefox &amp; Safari.
+  </footer>
+
+</div>
+
+<script>
+  // ---- browser-support detection ----
+  const banner = document.getElementById('support');
+  const supported = CSS.supports('row-rule', '1px solid black');
+  if (supported) {
+    banner.className = 'support ok';
+    banner.innerHTML = '<b>✓ Your browser supports gap decorations.</b> The rules below are real, not images.';
+  } else {
+    banner.className = 'support no';
+    banner.innerHTML = '<b>✗ This browser does not support gap decorations.</b> Gaps will render empty — open in Chrome / Edge 149+.';
+  }
+
+  // ---- control helpers ----
+  const rangeBind = (rangeId, labelId, target, prop, suffix) => {
+    const r = document.getElementById(rangeId);
+    const out = document.getElementById(labelId);
+    const apply = () => {
+      const v = r.value + (suffix || '');
+      target.style.setProperty(prop, v);
+      if (out) out.textContent = v;
+    };
+    r.addEventListener('input', apply);
+    apply();
+  };
+  const selBind = (selId, target, prop) => {
+    const s = document.getElementById(selId);
+    const apply = () => target.style.setProperty(prop, s.value);
+    s.addEventListener('change', apply);
+    apply();
+  };
+
+  // 01 — spanning items
+  selBind('span-break-sel', document.getElementById('span-grid'), '--span-break');
+
+  // 02 — rule-overlap
+  selBind('overlap-sel', document.getElementById('overlap-grid'), '--overlap');
+
+  // 04 — cap / junction insets + overlap-join
+  const inset2 = document.getElementById('inset2-grid');
+  rangeBind('cap-range', 'cap-val', inset2, '--cap', 'px');
+  rangeBind('junction-range', 'junction-val', inset2, '--junction', 'px');
+  const joinChk = document.getElementById('join-chk');
+  joinChk.addEventListener('change', () => {
+    if (joinChk.checked) inset2.style.setProperty('--junction-mode', 'overlap-join');
+    else inset2.style.removeProperty('--junction-mode');
+  });
+
+  // 07 — rule-visibility-items
+  selBind('vis-sel', document.getElementById('vis-grid'), '--vis');
+
+  // 08 — calendar days
+  (function buildCalendar() {
+    const cal = document.getElementById('cal-grid');
+    const lead = 2, days = 31;            // a generic month starting on Tuesday
+    for (let i = 0; i < lead; i++) {
+      const b = document.createElement('div');
+      b.className = 'cal-cell blank';
+      cal.appendChild(b);
+    }
+    for (let d = 1; d <= days; d++) {
+      const c = document.createElement('div');
+      c.className = 'cal-cell';
+      const col = (lead + d - 1) % 7;     // 0 = Sun … 6 = Sat
+      if (col === 0 || col === 6) c.classList.add('wknd');
+      c.textContent = d;
+      cal.appendChild(c);
+    }
+  })();
+
+  // ---- experimental sub-feature notices ----
+  const flag = (id, ok) => { if (!ok) document.getElementById(id).hidden = false; };
+  flag('exp-span',    CSS.supports('column-rule-break', 'spanning-item'));
+  flag('exp-overlap', CSS.supports('rule-overlap', 'row-over-column'));
+  flag('exp-inset',   CSS.supports('rule-inset-cap', '4px'));
+  flag('exp-vis',     CSS.supports('rule-visibility-items', 'between'));
+
+  // ---- caniuse widgets + graceful fallback ----
+  (function loadCaniuse() {
+    const s = document.createElement('script');
+    s.type = 'module';
+    s.src = 'https://caniuse-embed.vercel.app/embed.js';
+    s.onerror = revealFallback;
+    document.body.appendChild(s);
+
+    function revealFallback() {
+      document.getElementById('ciu-fallback').hidden = false;
+    }
+    setTimeout(() => {
+      const rendered = document.querySelector('.ciu-embed iframe');
+      if (!rendered) revealFallback();
+    }, 3500);
+  })();
+</script>
+</body>
+</html>
