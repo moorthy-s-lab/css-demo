@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CSS :has() — the parent selector</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Hanken+Grotesk:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<style>
+  /* Feature-specific CSS for this demo only — shared palette, typography,
+     masthead, specimen scaffolding, controls, code blocks, and the caniuse
+     widget all live in styles.css. */
+
+  /* ===== DEMO 1 — parent reacts to a child's state ===== */
+  .has-group { display: flex; flex-direction: column; gap: 14px; }
+  .has-row {
+    display: flex; align-items: center; gap: 8px;
+    font-family: "JetBrains Mono", monospace; font-size: 13px; color: var(--ink-soft);
+  }
+  .has-row input { accent-color: var(--accent); width: 15px; height: 15px; }
+  .has-card {
+    padding: 16px 18px; border-radius: 10px; border: 2px solid var(--line);
+    background: var(--paper); font-size: 14px;
+    transition: border-color 0.2s ease, background 0.2s ease;
+  }
+  .has-group:has(.d1-chk:checked) .has-card {
+    border-color: var(--accent); background: #eef1fc;
+  }
+
+  /* ===== DEMO 2 — relational (sibling) selection ===== */
+  .has-doc h3 {
+    font-family: "Space Grotesk", sans-serif; font-weight: 600; font-size: 16px;
+    margin: 0 0 6px; padding-bottom: 6px; color: var(--ink);
+  }
+  .has-doc p, .has-doc .has-note { margin: 0 0 20px; color: var(--ink-soft); font-size: 14px; }
+  .has-doc h3:has(+ p) { border-bottom: 3px solid var(--accent); }
+  .has-doc h3:not(:has(+ p)) { border-bottom: 3px dashed var(--line); }
+
+  /* ===== DEMO 3 — native form validation styling ===== */
+  .has-field { display: flex; flex-direction: column; gap: 8px; max-width: 320px; }
+  .has-field label {
+    font-family: "JetBrains Mono", monospace; font-size: 12px;
+    text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-soft);
+  }
+  .has-hint { text-transform: none; letter-spacing: 0; }
+  .has-field input {
+    padding: 9px 12px; border-radius: 8px; border: 2px solid var(--line);
+    background: var(--paper); font-family: "Hanken Grotesk", sans-serif; font-size: 14px;
+    transition: border-color 0.2s ease;
+  }
+  .has-field:has(input:invalid:not(:placeholder-shown)) input { border-color: var(--accent-2); }
+  .has-field:has(input:valid:not(:placeholder-shown)) input { border-color: #1d5b2c; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <p class="eyebrow">CSS Selectors · Level 4</p>
+    <h1>The selector that looks forward.</h1>
+    <p class="lede">
+      <code>:has()</code> matches an element based on what's <em>inside</em> or
+      <em>after</em> it — a real parent selector, at last. Style a container
+      because of its children, or a heading because of what follows it, with
+      zero JavaScript and no class toggling.
+    </p>
+    <div id="support" class="support"></div>
+  </header>
+
+  <!-- ============ 1 ============ -->
+  <section>
+    <p class="num">01 / PARENT REACTS TO CHILD — interactive</p>
+    <h2>:has(.child:checked)</h2>
+    <p class="desc">
+      Tick the checkbox. The card below it changes purely from CSS — no JS
+      listener toggles a class. <code>:has()</code> re-evaluates live as the
+      checkbox's <code>:checked</code> state changes.
+    </p>
+
+    <div class="specimen">
+      <div class="has-group">
+        <label class="has-row">
+          <input type="checkbox" class="d1-chk">
+          <span>Mark as featured</span>
+        </label>
+        <div class="has-card">
+          This card's border and background react to the checkbox above.
+        </div>
+      </div>
+    </div>
+
+<pre><span class="k">.group:has(.chk:checked) .card</span> {
+  <span class="k">border-color</span>: <span class="v">#2f4fd6</span>;
+  <span class="k">background</span>: <span class="v">#eef1fc</span>;
+}
+<span class="c">/* no JS: :has() re-evaluates whenever the checkbox's :checked state changes */</span></pre>
+  </section>
+
+  <!-- ============ 2 ============ -->
+  <section>
+    <p class="num">02 / RELATIONAL SELECTION</p>
+    <h2>:has(+ sibling)</h2>
+    <p class="desc">
+      <code>:has()</code> also looks sideways. Here every <code>h3</code>
+      immediately followed by a <code>&lt;p&gt;</code> gets a solid accent rule;
+      one followed by anything else gets a dashed one instead — the heading
+      "knows" what comes right after it.
+    </p>
+
+    <div class="specimen">
+      <div class="has-doc">
+        <h3>Has a paragraph next</h3>
+        <p>This paragraph immediately follows its heading, so the heading above
+        picks up the solid accent rule.</p>
+        <h3>No paragraph next</h3>
+        <div class="has-note">This is a <code>&lt;div&gt;</code>, not a
+        <code>&lt;p&gt;</code> — the heading above doesn't match, so it falls
+        back to the dashed rule.</div>
+      </div>
+    </div>
+
+<pre><span class="k">h3:has(+ p)</span>      { <span class="k">border-bottom</span>: <span class="v">3px solid #2f4fd6</span>; }
+<span class="k">h3:not(:has(+ p))</span> { <span class="k">border-bottom</span>: <span class="v">3px dashed #c3c5bd</span>; }</pre>
+  </section>
+
+  <!-- ============ 3 ============ -->
+  <section>
+    <p class="num">03 / FORM VALIDATION</p>
+    <h2>:has(:invalid) / :has(:valid)</h2>
+    <p class="desc">
+      Type something in the field. Combining <code>:has()</code> with the
+      native <code>:invalid</code> / <code>:valid</code> / <code>:placeholder-shown</code>
+      pseudo-classes rings the whole field group red or green from the browser's
+      own validation state — no validation library required.
+    </p>
+
+    <div class="specimen">
+      <div class="has-field">
+        <label for="d3-email">Email <span class="has-hint">(try typing an invalid value)</span></label>
+        <input type="email" id="d3-email" required placeholder="you@example.com">
+      </div>
+    </div>
+
+<pre><span class="k">.field:has(input:invalid:not(:placeholder-shown))</span> <span class="k">input</span> { <span class="k">border-color</span>: <span class="v">#d9531e</span>; }
+<span class="k">.field:has(input:valid:not(:placeholder-shown))</span>   <span class="k">input</span> { <span class="k">border-color</span>: <span class="v">#1d5b2c</span>; }
+<span class="c">/* :not(:placeholder-shown) skips the empty, untouched state */</span></pre>
+  </section>
+
+  <!-- ============ 4 ============ -->
+  <section id="support-section">
+    <p class="num">04 / AVAILABILITY</p>
+    <h2>Browser support</h2>
+    <p class="desc">
+      Live data pulled from caniuse in your browser, via the
+      <code>css-has</code> feature. If the live table can't load, a snapshot
+      table appears instead.
+    </p>
+
+    <div class="specimen">
+      <p class="ciu-embed"
+         data-feature="css-has"
+         data-past="2" data-future="1" data-theme="light"></p>
+
+      <div id="ciu-fallback" hidden>
+        <table class="support-table">
+          <caption>:has() selector — snapshot, 2026</caption>
+          <thead>
+            <tr><th>Browser</th><th>Support</th><th>Since</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Chrome</td>        <td class="yes">✓ Supported</td> <td class="since">105</td></tr>
+            <tr><td>Edge</td>          <td class="yes">✓ Supported</td> <td class="since">105</td></tr>
+            <tr><td>Firefox</td>       <td class="yes">✓ Supported</td> <td class="since">121</td></tr>
+            <tr><td>Safari</td>        <td class="yes">✓ Supported</td> <td class="since">15.4</td></tr>
+            <tr><td>Chrome Android</td><td class="yes">✓ Supported</td> <td class="since">105</td></tr>
+            <tr><td>Safari iOS</td>    <td class="yes">✓ Supported</td> <td class="since">15.4</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="ciu-note">
+        <span class="badge">Baseline · widely available</span>
+        <a href="https://caniuse.com/css-has">caniuse.com</a>
+        <a href="https://webstatus.dev/features/has">webstatus.dev</a>
+      </p>
+    </div>
+  </section>
+
+  <footer>
+    Works in every current browser · spec:
+    <a href="https://www.w3.org/TR/selectors-4/#relational">w3.org/TR/selectors-4</a> ·
+    Baseline since 2023 — no fallback needed.
+  </footer>
+
+</div>
+
+<script>
+  // ---- browser-support detection ----
+  const banner = document.getElementById('support');
+  const supported = CSS.supports('selector(:has(a))');
+  if (supported) {
+    banner.className = 'support ok';
+    banner.innerHTML = '<b>✓ Your browser supports :has().</b> Every specimen below is real, live CSS.';
+  } else {
+    banner.className = 'support no';
+    banner.innerHTML = '<b>✗ This browser does not support :has().</b> The specimens below will render unstyled.';
+  }
+
+  // ---- caniuse widget + graceful fallback ----
+  (function loadCaniuse() {
+    const s = document.createElement('script');
+    s.type = 'module';
+    s.src = 'https://caniuse-embed.vercel.app/embed.js';
+    s.onerror = revealFallback;
+    document.body.appendChild(s);
+
+    function revealFallback() {
+      document.getElementById('ciu-fallback').hidden = false;
+    }
+    setTimeout(() => {
+      const rendered = document.querySelector('.ciu-embed iframe');
+      if (!rendered) revealFallback();
+    }, 3500);
+  })();
+</script>
+</body>
+</html>

@@ -14,9 +14,15 @@ links to the demo `.html` files.
 
 ## Conventions
 
-- Each demo is a single standalone `.html` file (inline `<style>`/`<script>`),
-  using the shared "drafting-paper" palette and the Space Grotesk / Hanken
-  Grotesk / JetBrains Mono type set.
-- New demos: add `<name>.html` to the branch, then add a matching `<li>` card to
-  `index.html` (copy an existing one — bump the `idx`, set the `<h2>`, `href`, and
-  `.file`).
+- Each demo is a single `.html` file that links the shared `styles.css` (the
+  "drafting-paper" palette, Space Grotesk / Hanken Grotesk / JetBrains Mono
+  type set, masthead, specimen/code/caniuse-widget scaffolding) and inlines
+  only its own feature-specific `<style>`/`<script>`. Don't duplicate anything
+  already in `styles.css` into a page's inline styles.
+- New demos: add `<name>.html` to the branch, then prepend a matching `<li>`
+  card to the top of `<ul class="demo-list">` in `index.html` (copy an
+  existing card — set the `<h2>`, `href`, and `.file`; there is no `idx`
+  number badge). The list is newest-first.
+- Use the `new-css-demo` skill (`.claude/skills/new-css-demo/`) to scaffold a
+  new demo page from a CSS topic — it knows this house style and the
+  index-update convention above.

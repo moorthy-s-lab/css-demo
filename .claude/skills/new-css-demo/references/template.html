@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TODO — page title</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Hanken+Grotesk:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<style>
+  /* Feature-specific CSS for this demo only — shared palette, typography,
+     masthead, specimen scaffolding, controls, code blocks, and the caniuse
+     widget all live in styles.css. Add .demo-* rules below, one block per
+     numbered section, following the pattern of the two example blocks here. */
+
+  /* ===== DEMO 1 — TODO short label (interactive example pattern) ===== */
+  .demo-1 {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+    /* TODO: the property this whole page is about, driven by a CSS var so
+       the control below can live-update it */
+    /* some-property: var(--d1-value, <default>); */
+  }
+
+  /* ===== DEMO 2 — TODO short label (static example pattern) ===== */
+  .demo-2 {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+    /* TODO: a second facet of the feature, no controls needed */
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <p class="eyebrow">TODO · spec / module name</p>
+    <h1>TODO — a short, punchy hook.</h1>
+    <p class="lede">
+      TODO 2-3 sentences: what the feature is, why it matters, what per-item
+      hack or workaround it replaces. Use <code>inline code</code> for
+      property names.
+    </p>
+    <div id="support" class="support"></div>
+  </header>
+
+  <!-- ============ 1 ============ -->
+  <section>
+    <p class="num">01 / TODO LABEL — interactive</p>
+    <h2>TODO section title</h2>
+    <p class="desc">
+      TODO what this specimen demonstrates and what the control below does.
+    </p>
+
+    <div class="specimen">
+      <div class="demo-1" id="d1">
+        <div class="cell">1</div><div class="cell">2</div><div class="cell">3</div>
+      </div>
+
+      <div class="controls">
+        <div class="ctl">
+          <label>TODO value <b id="d1-value-val">TODO</b></label>
+          <input type="range" id="d1-value" min="0" max="10" value="2">
+        </div>
+      </div>
+    </div>
+
+<pre><span class="k">.example</span> {
+  <span class="k">TODO-property</span>: <span class="v">TODO-value</span>;
+}</pre>
+  </section>
+
+  <!-- ============ 2 ============ -->
+  <section>
+    <p class="num">02 / TODO LABEL</p>
+    <h2>TODO section title</h2>
+    <p class="desc">
+      TODO what this static specimen demonstrates.
+    </p>
+
+    <div class="specimen">
+      <div class="demo-2">
+        <div class="cell">1</div><div class="cell">2</div><div class="cell">3</div>
+      </div>
+    </div>
+
+<pre><span class="k">.example</span> {
+  <span class="k">TODO-property</span>: <span class="v">TODO-value</span>;
+}</pre>
+  </section>
+
+  <!-- ============ N — repeat sections 1-2 as needed, 3-6 total ============ -->
+
+  <!-- ============ support (always last) ============ -->
+  <section id="support-section">
+    <p class="num">NN / AVAILABILITY</p>
+    <h2>Browser support</h2>
+    <p class="desc">
+      Live data pulled from caniuse in your browser, via the
+      <code>TODO-caniuse-or-mdn-slug</code> feature. If the live table can't
+      load, a snapshot table appears instead.
+    </p>
+
+    <div class="specimen">
+      <!-- caniuse live widget (rendered in the visitor's browser).
+           theme pinned to light: the specimen card is always light, so the
+           widget's default "auto" (which follows the visitor's OS scheme)
+           would paint white text on this light card in dark mode → invisible. -->
+      <p class="ciu-embed"
+         data-feature="TODO-caniuse-or-mdn-slug"
+         data-past="2" data-future="1" data-theme="light"></p>
+
+      <!-- static fallback, revealed only if the live embed doesn't render -->
+      <div id="ciu-fallback" hidden>
+        <table class="support-table">
+          <caption>TODO feature name — snapshot, TODO month/year</caption>
+          <thead>
+            <tr><th>Browser</th><th>Support</th><th>Since</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Chrome</td>        <td class="yes">✓ Supported</td>     <td class="since">TODO</td></tr>
+            <tr><td>Edge</td>          <td class="yes">✓ Supported</td>     <td class="since">TODO</td></tr>
+            <tr><td>Firefox</td>       <td class="no">✗ Not supported</td>  <td class="since">—</td></tr>
+            <tr><td>Safari</td>        <td class="no">✗ Not supported</td>  <td class="since">—</td></tr>
+            <tr><td>Chrome Android</td><td class="yes">✓ Supported</td>     <td class="since">TODO</td></tr>
+            <tr><td>Safari iOS</td>    <td class="no">✗ Not supported</td>  <td class="since">—</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="ciu-note">
+        <span class="badge">TODO availability badge, e.g. "Baseline 2026" or "Limited availability"</span>
+        <a href="https://caniuse.com/TODO-slug">caniuse.com</a>
+        <a href="https://webstatus.dev/features/TODO-slug">webstatus.dev</a>
+      </p>
+    </div>
+  </section>
+
+  <footer>
+    TODO one line: how/where to view it working · spec:
+    <a href="TODO-spec-url">TODO spec label</a> ·
+    TODO fallback caveat if relevant.
+  </footer>
+
+</div>
+
+<script>
+  // ---- browser-support detection ----
+  const banner = document.getElementById('support');
+  const supported = CSS.supports('TODO-property', 'TODO-value'); // TODO: real feature test
+  if (supported) {
+    banner.className = 'support ok';
+    banner.innerHTML = '<b>✓ Your browser supports TODO feature.</b> TODO detail.';
+  } else {
+    banner.className = 'support no';
+    banner.innerHTML = '<b>✗ This browser does not support TODO feature.</b> TODO fallback note.';
+  }
+
+  // ---- reusable control-binding helpers ----
+  // range input → sets a CSS custom property on `target`, with an optional
+  // unit suffix, and mirrors the value into a label.
+  const rangeBind = (rangeId, labelId, target, prop, suffix) => {
+    const r = document.getElementById(rangeId);
+    const out = document.getElementById(labelId);
+    const apply = () => {
+      const v = r.value + (suffix || '');
+      target.style.setProperty(prop, v);
+      if (out) out.textContent = v;
+    };
+    r.addEventListener('input', apply);
+    apply();
+  };
+  // select input → sets a CSS custom property on `target`.
+  const selBind = (selId, target, prop) => {
+    const s = document.getElementById(selId);
+    const apply = () => target.style.setProperty(prop, s.value);
+    s.addEventListener('change', apply);
+    apply();
+  };
+
+  // ---- demo 1 control ----
+  rangeBind('d1-value', 'd1-value-val', document.getElementById('d1'), '--d1-value', 'px');
+
+  // ---- caniuse widget + graceful fallback ----
+  // pengzhanbo's embed pulls caniuse + MDN + web-features data and renders an
+  // iframe. If it doesn't render (network blocked, feature slug not found,
+  // etc.) after a grace period, the snapshot table is revealed instead.
+  (function loadCaniuse() {
+    const s = document.createElement('script');
+    s.type = 'module';
+    s.src = 'https://caniuse-embed.vercel.app/embed.js';
+    s.onerror = revealFallback;
+    document.body.appendChild(s);
+
+    function revealFallback() {
+      document.getElementById('ciu-fallback').hidden = false;
+    }
+    setTimeout(() => {
+      const rendered = document.querySelector('.ciu-embed iframe');
+      if (!rendered) revealFallback();
+    }, 3500);
+  })();
+</script>
+</body>
+</html>

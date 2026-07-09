@@ -7,43 +7,14 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Hanken+Grotesk:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
 <style>
-  :root {
-    --paper:    #e9eae4;
-    --panel:    #f4f5f0;
-    --ink:      #1a1d22;
-    --ink-soft: #5a5e66;
-    --line:     #c3c5bd;
-    --accent:   #2f4fd6;
-    --accent-2: #d9531e;
-  }
-
-  * { box-sizing: border-box; }
-
-  body {
-    margin: 0;
-    background: var(--paper);
-    color: var(--ink);
-    font-family: "Hanken Grotesk", system-ui, sans-serif;
-    line-height: 1.55;
-    -webkit-font-smoothing: antialiased;
-  }
-
-  .wrap { max-width: 760px; margin: 0 auto; padding: 56px 24px 96px; }
-
-  /* ---------- masthead ---------- */
+  /* index-only overrides + demo list/card — shared palette, typography and
+     masthead all live in styles.css. */
+  .wrap { max-width: 760px; padding: 56px 24px 96px; }
   header { margin-bottom: 40px; }
-  .eyebrow {
-    font-family: "JetBrains Mono", monospace;
-    font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase;
-    color: var(--ink-soft); margin: 0 0 14px;
-  }
-  h1 {
-    font-family: "Space Grotesk", sans-serif;
-    font-weight: 700; font-size: clamp(32px, 5.5vw, 50px);
-    line-height: 1.04; letter-spacing: -0.02em; margin: 0 0 16px;
-  }
-  .lede { font-size: 18px; color: var(--ink-soft); max-width: 54ch; margin: 0; }
+  h1 { font-size: clamp(32px, 5.5vw, 50px); line-height: 1.04; }
+  .lede { max-width: 54ch; }
 
   /* ---------- demo list ---------- */
   .demo-list {
@@ -61,10 +32,6 @@
     border-color: var(--accent); transform: translateY(-2px);
     box-shadow: 0 8px 26px rgba(47, 79, 214, 0.10);
     outline: none;
-  }
-  .demo-card .idx {
-    font-family: "JetBrains Mono", monospace; font-size: 12px;
-    color: var(--accent); align-self: flex-start; padding-top: 3px;
   }
   .demo-card .body { flex: 1; min-width: 0; }
   .demo-card h2 {
@@ -85,11 +52,6 @@
     color: var(--accent); transform: translateX(4px);
   }
 
-  footer {
-    margin-top: 56px; padding-top: 24px; border-top: 1px solid var(--line);
-    font-family: "JetBrains Mono", monospace; font-size: 12px; color: var(--ink-soft);
-  }
-  footer a { color: var(--accent); }
   footer code {
     background: #e2e3dc; padding: 1px 5px; border-radius: 5px; font-size: 11.5px;
   }
@@ -113,21 +75,28 @@
   <main>
     <ul class="demo-list">
       <li>
-        <a class="demo-card" href="gap-decorations.html">
-          <span class="idx">01</span>
+        <a class="demo-card" href="has-selector.html">
           <span class="body">
-            <h2>CSS Gap Decorations — a working specimen</h2>
-            <span class="file">gap-decorations.html</span>
+            <h2>CSS :has() — the parent selector</h2>
+            <span class="file">has-selector.html</span>
           </span>
           <span class="arrow" aria-hidden="true">&rarr;</span>
         </a>
       </li>
       <li>
         <a class="demo-card" href="gap-decorations-advanced.html">
-          <span class="idx">02</span>
           <span class="body">
             <h2>CSS Gap Decorations II — spanning, paint order, patterns</h2>
             <span class="file">gap-decorations-advanced.html</span>
+          </span>
+          <span class="arrow" aria-hidden="true">&rarr;</span>
+        </a>
+      </li>
+      <li>
+        <a class="demo-card" href="gap-decorations.html">
+          <span class="body">
+            <h2>CSS Gap Decorations — a working specimen</h2>
+            <span class="file">gap-decorations.html</span>
           </span>
           <span class="arrow" aria-hidden="true">&rarr;</span>
         </a>
