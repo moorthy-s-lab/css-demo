@@ -28,6 +28,26 @@ finished shape. `references/template.html` is a stripped scaffold of the same
 thing with the feature-specific parts removed; use it as your starting file,
 don't rebuild the shell from memory.
 
+## Outline first — get sign-off before building
+
+Before copying the template or creating any file, present a short outline and
+wait for the user to approve or adjust it. Don't create `<slug>.html` or touch
+`index.html` until they've signed off — even if they already spelled out the
+sections in their request, echo the outline back for a quick confirm rather
+than skipping this gate.
+
+The outline is:
+- the proposed filename (`<slug>.html`);
+- the masthead angle — the intended `h1` hook + a one-line gist of the `.lede`;
+- the **ordered list of numbered sections** you plan to build, each as
+  `NN / LABEL` with a one-line note on what it demonstrates and whether it's
+  interactive — ordered simplest-form-of-the-feature to most-advanced-corner,
+  per the section-ordering guidance in step 4 below;
+- a note that the availability/support section is always appended last.
+
+Once the user approves (or edits) the outline, proceed through the Workflow
+below using that approved section list.
+
 ## Workflow
 
 1. **Pick a filename.** Kebab-case the topic → `<slug>.html` (e.g. "CSS
