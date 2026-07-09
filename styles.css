@@ -48,6 +48,27 @@ h1 {
 .lede { font-size: 18px; color: var(--ink-soft); max-width: 58ch; margin: 0; }
 .lede code { font-family: "JetBrains Mono", monospace; font-size: 0.9em; }
 
+/* ---------- sticky sidebar TOC (built by toc.js from .num labels) ---------- */
+html { scroll-behavior: smooth; }
+section { scroll-margin-top: 24px; }
+.toc {
+  position: fixed; top: 48px; left: max(24px, calc(50% - 600px));
+  width: 150px; max-height: 80vh; overflow-y: auto;
+}
+.toc ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.toc a {
+  display: flex; gap: 8px; align-items: baseline;
+  font-family: "JetBrains Mono", monospace; font-size: 11.5px; line-height: 1.4;
+  color: var(--ink-soft); text-decoration: none;
+}
+.toc a:hover, .toc a:focus-visible { color: var(--ink); }
+.toc a.active { color: var(--accent); font-weight: 500; }
+.toc-n { color: var(--accent); flex: none; }
+.toc a.active .toc-n { color: inherit; }
+@media (max-width: 1180px) {
+  .toc { display: none; }
+}
+
 /* ---------- support banner ---------- */
 .support {
   margin: 28px 0 0; padding: 14px 18px; border-radius: 10px;
@@ -165,4 +186,5 @@ footer a { color: var(--accent); }
 
 @media (prefers-reduced-motion: reduce) {
   .specimen { transition: none; }
+  html { scroll-behavior: auto; }
 }

@@ -38,12 +38,15 @@ don't rebuild the shell from memory.
 2. **Copy the template.** Copy `references/template.html` to `<slug>.html` at
    the repo root. It already links `styles.css` and the Google Fonts, and
    carries the masthead, one interactive section, one static section, and the
-   full caniuse support section as clonable patterns.
+   full caniuse support section as clonable patterns. It also already links
+   the shared `toc.js` — don't remove that `<script>` tag.
 
-3. **Write the masthead.** Fill in the `<title>`, `.eyebrow` (module/spec
-   name), `h1` (a short, punchy hook — see "Lines that live in the gaps." /
-   "Past the basics." for tone), and `.lede` (2-3 sentences: what the feature
-   is, why it matters, what a per-item hack it replaces).
+3. **Write the masthead.** Fill in the `<title>`, `.eyebrow` (the template
+   already opens it with `<a href="index.html">← All demos</a> · ` — keep
+   that link, just replace the `TODO · spec / module name` part after it),
+   `h1` (a short, punchy hook — see "Lines that live in the gaps." / "Past
+   the basics." for tone), and `.lede` (2-3 sentences: what the feature is,
+   why it matters, what a per-item hack it replaces).
 
 4. **Build 3-6 numbered sections.** Each section is `<p class="num">NN /
    LABEL</p>`, an `h2`, a `.desc`, a `.specimen` containing the live rendered
@@ -51,6 +54,12 @@ don't rebuild the shell from memory.
    value, `.c` comment). Order sections from the simplest form of the feature
    to its more advanced corners, the way both existing demos build from a
    basic shorthand up through edge cases.
+
+   The shared `toc.js` builds the page's sticky sidebar table-of-contents by
+   reading each section's `<p class="num">NN / LABEL</p>` text automatically
+   — there's no separate menu list to maintain, just keep that `NN / LABEL`
+   format and keep labels short (a trailing `— interactive` qualifier is
+   stripped for the TOC).
 
    Only add JS-driven controls (`.controls` / `.ctl` / range or select
    inputs bound via a small `bind`/bind-like helper, see the template's demo
@@ -106,9 +115,10 @@ don't rebuild the shell from memory.
 
 - **Link, don't re-inline.** `styles.css` at the repo root carries the shared
   palette, typography, masthead, section scaffolding, controls, code-block,
-  and caniuse-widget CSS. New demo pages `<link>` it and add only
-  feature-specific CSS inline. Don't copy shared rules into the new page's
-  `<style>` block — that's the duplication this stylesheet exists to avoid.
+  caniuse-widget, and sticky-TOC (`.toc`) CSS. New demo pages `<link>` it and
+  add only feature-specific CSS inline. Don't copy shared rules into the new
+  page's `<style>` block — that's the duplication this stylesheet exists to
+  avoid.
 - **One file per demo**, inline `<style>`/`<script>` for the feature-specific
   parts only — still no build step, no JS framework, no bundler.
 - **Index is newest-first, no `idx` numbers.** New card goes at the top of
