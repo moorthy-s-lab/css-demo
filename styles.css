@@ -7,6 +7,7 @@
    ========================================================================== */
 
 :root {
+  color-scheme: light;
   --paper:    #e9eae4;   /* drafting-paper ground            */
   --panel:    #f4f5f0;   /* raised specimen card             */
   --ink:      #1a1d22;   /* near-black text + structural ink */
@@ -19,6 +20,26 @@
   --code-fg:  #e6e7ea;
 }
 
+/* ---------- dark mode ----------
+   Every rule in this file reads the palette through custom properties, so
+   flipping them here flips the whole page — masthead, .specimen cards,
+   demos, controls, code blocks — with no per-page dark variants needed. */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --paper:    #14161b;
+  --panel:    #1c1f26;
+  --ink:      #e6e7e2;
+  --ink-soft: #9398a0;
+  --line:     #33363e;
+  --accent:   #7c9bff;
+}
+/* .support-table's yes/no/partial are bare text colours (no paired
+   background), tuned for dark-on-light — too low-contrast on a dark
+   .specimen card, so they get dark-safe counterparts here. */
+:root[data-theme="dark"] .yes     { color: #6fcf8f; }
+:root[data-theme="dark"] .no      { color: #ff8a65; }
+:root[data-theme="dark"] .partial { color: #f0b45c; }
+
 * { box-sizing: border-box; }
 
 body {
@@ -28,7 +49,19 @@ body {
   font-family: "Hanken Grotesk", system-ui, sans-serif;
   line-height: 1.55;
   -webkit-font-smoothing: antialiased;
+  transition: background-color 0.15s ease, color 0.15s ease;
 }
+
+/* ---------- theme toggle ---------- */
+.theme-toggle {
+  position: fixed; top: 16px; right: max(16px, calc(50% - 600px));
+  width: 36px; height: 36px; border-radius: 50%; z-index: 10;
+  border: 1px solid var(--line); background: var(--panel); color: var(--ink);
+  font-size: 15px; line-height: 1; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: border-color 0.15s ease;
+}
+.theme-toggle:hover, .theme-toggle:focus-visible { border-color: var(--accent); outline: none; }
 
 .wrap { max-width: 880px; margin: 0 auto; padding: 48px 24px 96px; }
 
@@ -187,4 +220,5 @@ footer a { color: var(--accent); }
 @media (prefers-reduced-motion: reduce) {
   .specimen { transition: none; }
   html { scroll-behavior: auto; }
+  body, .theme-toggle { transition: none; }
 }

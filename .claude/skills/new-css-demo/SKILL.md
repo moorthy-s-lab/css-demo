@@ -115,10 +115,26 @@ don't rebuild the shell from memory.
 
 - **Link, don't re-inline.** `styles.css` at the repo root carries the shared
   palette, typography, masthead, section scaffolding, controls, code-block,
-  caniuse-widget, and sticky-TOC (`.toc`) CSS. New demo pages `<link>` it and
-  add only feature-specific CSS inline. Don't copy shared rules into the new
-  page's `<style>` block — that's the duplication this stylesheet exists to
-  avoid.
+  caniuse-widget, sticky-TOC (`.toc`), and dark-mode CSS. New demo pages
+  `<link>` it and add only feature-specific CSS inline. Don't copy shared
+  rules into the new page's `<style>` block — that's the duplication this
+  stylesheet exists to avoid.
+- **Dark mode covers the whole page, including `.specimen`.** `styles.css`
+  flips the palette vars via `:root[data-theme="dark"]`; because every rule
+  reads colour through those vars, `.specimen` cards and the demos inside
+  them go dark automatically — don't hand-roll a per-page dark variant. The
+  template already carries the no-flash inline snippet + `theme.js` link
+  that apply the theme and wire the toggle button; don't remove them.
+  **Always use the palette vars** (`var(--paper)`, `var(--accent)`, etc.) for
+  any colour a demo needs, never a bare hex — a hardcoded colour won't adapt
+  between themes and can silently go low-contrast (e.g. dark text becoming
+  invisible once the card goes dark). If a demo genuinely needs a fixed
+  highlight tint that a var can't express, add an explicit
+  `:root[data-theme="dark"] .your-selector { … }` counterpart next to it, the
+  way `has-selector.html`'s checked-card highlight does.
+  The caniuse `.ciu-embed`'s `data-theme` is set at runtime by the existing
+  `loadCaniuse()` script (matching the page theme at load) — don't hardcode
+  `data-theme="light"` on it.
 - **One file per demo**, inline `<style>`/`<script>` for the feature-specific
   parts only — still no build step, no JS framework, no bundler.
 - **Index is newest-first, no `idx` numbers.** New card goes at the top of

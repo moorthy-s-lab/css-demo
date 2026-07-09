@@ -8,6 +8,8 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Hanken+Grotesk:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
+<script>document.documentElement.dataset.theme = localStorage.theme || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');</script>
+<script src="theme.js" defer></script>
 <script src="toc.js" defer></script>
 <style>
   /* Feature-specific CSS for this demo only — shared palette, typography,
@@ -526,9 +528,11 @@
     </p>
 
     <div class="specimen">
+      <!-- data-theme is set at load by loadCaniuse() below, matching the
+           page's current light/dark theme. -->
       <p class="ciu-embed"
          data-feature="mdn-css_properties_row-rule"
-         data-past="2" data-future="1" data-theme="light"></p>
+         data-past="2" data-future="1"></p>
 
       <div id="ciu-fallback" hidden>
         <table class="support-table">
@@ -643,6 +647,9 @@
 
   // ---- caniuse widgets + graceful fallback ----
   (function loadCaniuse() {
+    // ponytail: theme is read once at load, not re-synced on manual toggle —
+    // the embed doesn't re-render for an attribute change after mount.
+    document.querySelector('.ciu-embed').dataset.theme = document.documentElement.dataset.theme;
     const s = document.createElement('script');
     s.type = 'module';
     s.src = 'https://caniuse-embed.vercel.app/embed.js';

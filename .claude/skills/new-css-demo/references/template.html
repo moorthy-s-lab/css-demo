@@ -8,6 +8,8 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Hanken+Grotesk:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
+<script>document.documentElement.dataset.theme = localStorage.theme || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');</script>
+<script src="theme.js" defer></script>
 <script src="toc.js" defer></script>
 <style>
   /* Feature-specific CSS for this demo only — shared palette, typography,
@@ -107,12 +109,11 @@
 
     <div class="specimen">
       <!-- caniuse live widget (rendered in the visitor's browser).
-           theme pinned to light: the specimen card is always light, so the
-           widget's default "auto" (which follows the visitor's OS scheme)
-           would paint white text on this light card in dark mode → invisible. -->
+           data-theme is set at load by loadCaniuse() below, matching the
+           page's current light/dark theme — don't hardcode it here. -->
       <p class="ciu-embed"
          data-feature="TODO-caniuse-or-mdn-slug"
-         data-past="2" data-future="1" data-theme="light"></p>
+         data-past="2" data-future="1"></p>
 
       <!-- static fallback, revealed only if the live embed doesn't render -->
       <div id="ciu-fallback" hidden>
@@ -190,6 +191,9 @@
   // iframe. If it doesn't render (network blocked, feature slug not found,
   // etc.) after a grace period, the snapshot table is revealed instead.
   (function loadCaniuse() {
+    // ponytail: theme is read once at load, not re-synced on manual toggle —
+    // the embed doesn't re-render for an attribute change after mount.
+    document.querySelector('.ciu-embed').dataset.theme = document.documentElement.dataset.theme;
     const s = document.createElement('script');
     s.type = 'module';
     s.src = 'https://caniuse-embed.vercel.app/embed.js';
