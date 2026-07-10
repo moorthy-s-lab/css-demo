@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CSS animation-timeline — scroll becomes time</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Hanken+Grotesk:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<script>document.documentElement.dataset.theme = localStorage.theme || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');</script>
+<script src="theme.js" defer></script>
+<script src="toc.js" defer></script>
+<style>
+  /* Feature-specific CSS for this demo only — shared palette, typography,
+     masthead, specimen scaffolding, controls, code blocks, and the caniuse
+     widget all live in styles.css. */
+
+  /* ===== persistent page-scroll cue ===== */
+  .page-progress {
+    position: fixed; inset: 0 0 auto; height: 5px; z-index: 20;
+    background: color-mix(in srgb, var(--line) 60%, transparent);
+  }
+  .page-progress-fill {
+    display: block; width: 100%; height: 100%; background: var(--accent);
+    transform: scaleX(0); transform-origin: left;
+    animation: page-progress 1ms linear both;
+    animation-timeline: scroll(root block);
+  }
+  @keyframes page-progress { to { transform: scaleX(1); } }
+
+  .cue-label, .stage-label, .edge-cue, .range-edge,
+  .range-meter-label, .named-status, .range-key-row {
+    font-family: "JetBrains Mono", monospace;
+  }
+
+  /* ===== syntax primer ===== */
+  .syntax-primer {
+    margin-top: 32px; padding: 20px 22px;
+    border: 1px solid var(--line); border-left: 4px solid var(--accent);
+    border-radius: 10px; background: var(--panel);
+  }
+  .syntax-primer h2 {
+    margin: 0 0 12px; font-size: 15px;
+    font-family: "JetBrains Mono", monospace; color: var(--ink-soft);
+  }
+  .syntax-map {
+    display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+  .syntax-group {
+    min-width: 0; padding: 12px; border: 1px solid var(--line);
+    border-radius: 8px; background: var(--paper);
+  }
+  .syntax-group.wide { grid-column: 1 / -1; }
+  .syntax-group h3 {
+    margin: 0 0 7px; color: var(--accent); font: 500 10px/1.3 "JetBrains Mono", monospace;
+    letter-spacing: .08em; text-transform: uppercase;
+  }
+  pre.syntax-code {
+    margin: 0; padding: 12px 14px; border-radius: 6px;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
+  pre.syntax-code + pre.syntax-code { margin-top: 6px; }
+  .syntax-note {
+    margin: 6px 0 0; color: var(--ink-soft); font-size: 11.5px; line-height: 1.45;
+  }
+  .syntax-note code, .syntax-order code {
+    font: 11px "JetBrains Mono", monospace; color: var(--ink);
+  }
+  .syntax-order {
+    margin: 14px 0 0; padding-top: 12px; border-top: 1px dashed var(--line);
+    color: var(--ink-soft); font-size: 13px;
+  }
+  @media (max-width: 620px) {
+    .syntax-map { grid-template-columns: 1fr; }
+    .syntax-group.wide { grid-column: auto; }
+  }
+
+  /* ===== DEMO 1 — root scroll progress ===== */
+  .progress-explainer {
+    display: grid; grid-template-columns: 1fr auto; gap: 20px;
+    align-items: center;
+  }
+  .progress-track {
+    height: 12px; overflow: hidden; border-radius: 999px;
+    border: 1px solid var(--line); background: var(--paper);
+  }
+  .progress-track::before {
+    content: ""; display: block; width: 100%; height: 100%;
+    background: var(--accent); transform: scaleX(0); transform-origin: left;
+    animation: page-progress 1ms linear both;
+    animation-timeline: scroll(root block);
+  }
+  .progress-explainer .cue-label { font-size: 11px; color: var(--ink-soft); }
+  .progress-scale {
+    grid-column: 1; display: flex; justify-content: space-between;
+    margin-top: -12px; font: 10px "JetBrains Mono", monospace;
+    color: var(--ink-soft);
+  }
+
+  /* ===== DEMO 2 — nearest scroll container ===== */
+  .local-frame { position: relative; timeline-scope: --local-scroll; }
+  .local-stage {
+    height: 330px; overflow-y: auto; overscroll-behavior: contain;
+    border: 1px solid var(--line); border-radius: 10px; background: var(--paper);
+    scroll-timeline: --local-scroll block;
+  }
+  .local-track { min-height: 850px; padding: 110px 54px 130px 28px; }
+  .local-runway {
+    position: sticky; top: 112px; height: 82px; border-radius: 10px;
+    border: 1px dashed var(--line); display: flex; align-items: center;
+    padding: 10px; overflow: hidden;
+  }
+  .local-runner {
+    width: 54px; aspect-ratio: 1; border-radius: 50%;
+    position: relative;
+    display: grid; place-items: center; color: var(--panel); background: var(--accent);
+    font: 600 12px "JetBrains Mono", monospace;
+    animation: run-local 1ms linear both;
+    animation-timeline: --local-scroll;
+  }
+  @keyframes run-local {
+    from { left: 0; rotate: 0deg; }
+    to { left: calc(100% - 54px); rotate: 720deg; }
+  }
+  .local-meter {
+    position: absolute; top: 18px; right: 18px; bottom: 18px; width: 8px;
+    border-radius: 999px; border: 1px solid var(--line); overflow: hidden;
+    background: var(--panel);
+  }
+  .local-meter span {
+    display: block; width: 100%; height: 100%; background: var(--accent-2);
+    transform: scaleY(0); transform-origin: top;
+    animation: fill-local 1ms linear both;
+    animation-timeline: --local-scroll;
+  }
+  @keyframes fill-local { to { transform: scaleY(1); } }
+  .stage-label {
+    display: block; font-size: 10px; letter-spacing: .08em;
+    text-transform: uppercase; color: var(--ink-soft); margin-bottom: 130px;
+  }
+  .stage-label:last-child { margin: 150px 0 0; }
+
+  /* ===== DEMO 3 — anonymous view timelines ===== */
+  .view-frame { position: relative; }
+  .view-scroller {
+    height: 360px; overflow-y: auto; overscroll-behavior: contain;
+    border: 1px solid var(--line); border-radius: 10px; background: var(--paper);
+  }
+  .view-content { padding: 170px 34px; display: grid; gap: 160px; }
+  .view-card {
+    min-height: 120px; padding: 24px; border: 2px solid var(--accent);
+    border-radius: 12px; background: var(--panel);
+    display: grid; align-content: center; gap: 5px;
+    opacity: .18; transform: translateY(36px) scale(.92);
+    animation: card-enters 1ms linear both;
+    animation-timeline: view(block);
+    animation-range: entry 0% entry 100%;
+  }
+  .view-card b { font: 600 17px "Space Grotesk", sans-serif; }
+  .view-card span { color: var(--ink-soft); font-size: 13px; }
+  @keyframes card-enters {
+    to { opacity: 1; transform: translateY(0) scale(1); }
+  }
+  .edge-cue {
+    position: absolute; z-index: 2; left: 12px; right: 12px;
+    border-top: 1px dashed var(--accent-2); pointer-events: none;
+    font-size: 9px; letter-spacing: .08em; color: var(--accent-2);
+  }
+  .edge-cue.top { top: 1px; padding-top: 4px; }
+  .edge-cue.bottom { bottom: 1px; padding-bottom: 4px; transform: translateY(-100%); }
+  .edge-cue.bottom span { background: var(--paper); padding-right: 5px; }
+
+  /* ===== DEMO 4 — animation-range visualizer ===== */
+  .range-explorer { --chosen-range: entry; }
+  .range-layout {
+    display: grid; grid-template-columns: minmax(300px, 1.25fr) minmax(220px, .75fr);
+    gap: 20px;
+  }
+  .range-frame {
+    --range-start: 0%; --range-end: 26%;
+    position: relative; height: 430px; timeline-scope: --range-view;
+  }
+  .range-viewport {
+    height: 100%; overflow-y: auto; overscroll-behavior: contain;
+    border: 2px solid var(--ink); border-radius: 12px; background: var(--paper);
+  }
+  .range-scroll-content { min-height: 1010px; padding: 430px 58px 430px 24px; }
+  .range-subject {
+    position: relative; min-height: 150px; border: 3px solid var(--accent);
+    border-radius: 12px; background: var(--panel); color: var(--ink);
+    display: grid; place-items: center; text-align: center; padding: 24px;
+    view-timeline: --range-view block;
+    animation: range-state 1ms linear both;
+    animation-timeline: --range-view;
+    animation-range: var(--chosen-range);
+  }
+  .range-subject strong {
+    font: 600 17px "Space Grotesk", sans-serif;
+  }
+  .range-subject small {
+    display: block; margin-top: 4px; font: 11px "JetBrains Mono", monospace;
+  }
+  @keyframes range-state {
+    from { opacity: .3; transform: scale(.88); }
+    to { opacity: 1; transform: scale(1.04); background: var(--accent); color: var(--panel); }
+  }
+  .range-edge {
+    position: absolute; left: 2px; right: 24px; z-index: 4;
+    border-top: 2px dashed var(--accent-2); pointer-events: none;
+    color: var(--accent-2); font-size: 9px; letter-spacing: .08em;
+    text-transform: uppercase;
+  }
+  .range-edge.range-start { bottom: var(--range-start); }
+  .range-edge.range-end { bottom: var(--range-end); }
+  .range-edge span {
+    position: absolute; left: 6px; background: var(--paper); padding: 0 4px;
+    white-space: nowrap;
+  }
+  .range-edge.range-start span { bottom: 4px; }
+  .range-edge.range-end span { top: 4px; }
+  .range-band {
+    position: absolute; z-index: 2; left: 2px; right: 24px;
+    bottom: var(--range-start); height: calc(var(--range-end) - var(--range-start));
+    background: color-mix(in srgb, var(--accent-2) 9%, transparent);
+    pointer-events: none;
+  }
+  .subject-edge {
+    position: absolute; left: 8px; font: 9px "JetBrains Mono", monospace;
+    letter-spacing: .08em; text-transform: uppercase; color: inherit;
+  }
+  .subject-edge.top { top: 5px; }
+  .subject-edge.bottom { bottom: 5px; }
+  .range-meter {
+    position: absolute; top: 48px; right: 18px; bottom: 48px; width: 12px;
+    border: 1px solid var(--line); border-radius: 999px; overflow: hidden;
+    background: var(--panel); pointer-events: none;
+  }
+  .range-meter-fill {
+    display: block; width: 100%; height: 100%; background: var(--accent-3);
+    transform: scaleY(0); transform-origin: bottom;
+    animation: range-meter 1ms linear both;
+    animation-timeline: --range-view;
+    animation-range: var(--chosen-range);
+  }
+  @keyframes range-meter { to { transform: scaleY(1); } }
+  .range-meter-label {
+    position: absolute; right: 6px; z-index: 3; font-size: 9px;
+    color: var(--ink-soft); pointer-events: none;
+  }
+  .range-meter-label.to { top: 28px; }
+  .range-meter-label.from { bottom: 28px; }
+
+  .range-key { display: grid; align-content: start; gap: 8px; }
+  .range-key-row {
+    position: relative; padding: 10px 10px 10px 32px;
+    border: 1px solid var(--line); border-radius: 8px;
+    width: 100%; appearance: none; background: transparent; text-align: left; cursor: pointer;
+    color: var(--ink-soft); font-size: 10px; line-height: 1.35;
+  }
+  .range-key-row::before {
+    content: ""; position: absolute; left: 12px; top: 9px; bottom: 9px; width: 7px;
+    border-radius: 999px; background: var(--line);
+  }
+  .range-key-row b { display: block; color: var(--ink); font-weight: 500; }
+  .range-key-row:hover { border-color: var(--accent); }
+  .range-key-row:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .range-explorer[data-range="cover"] .range-key-row[data-key="cover"],
+  .range-explorer[data-range="entry"] .range-key-row[data-key="entry"],
+  .range-explorer[data-range="contain"] .range-key-row[data-key="contain"],
+  .range-explorer[data-range="exit"] .range-key-row[data-key="exit"],
+  .range-explorer[data-range="custom"] .range-key-row[data-key="custom"] {
+    border-color: var(--accent); background: color-mix(in srgb, var(--accent) 10%, var(--panel));
+  }
+  .range-explorer[data-range="cover"] .range-key-row[data-key="cover"]::before,
+  .range-explorer[data-range="entry"] .range-key-row[data-key="entry"]::before,
+  .range-explorer[data-range="contain"] .range-key-row[data-key="contain"]::before,
+  .range-explorer[data-range="exit"] .range-key-row[data-key="exit"]::before,
+  .range-explorer[data-range="custom"] .range-key-row[data-key="custom"]::before {
+    background: var(--accent);
+  }
+  .range-reading {
+    grid-column: 1 / -1; margin: 0; padding: 10px 12px;
+    border-left: 3px solid var(--accent-3); color: var(--ink-soft);
+    background: color-mix(in srgb, var(--accent-3) 8%, var(--panel));
+    font-size: 13px;
+  }
+
+  /* ===== DEMO 5 — a named timeline shared across siblings ===== */
+  .named-shell {
+    display: grid; grid-template-columns: minmax(260px, 1fr) 190px;
+    gap: 18px; align-items: stretch; timeline-scope: --story-scroll;
+  }
+  .named-scroller {
+    height: 300px; overflow-y: auto; overscroll-behavior: contain;
+    border: 1px solid var(--line); border-radius: 10px; background: var(--paper);
+    scroll-timeline: --story-scroll block;
+  }
+  .named-story { min-height: 780px; padding: 30px; display: grid; align-content: space-between; }
+  .named-story p { max-width: 30ch; margin: 0; color: var(--ink-soft); }
+  .named-story b { color: var(--ink); }
+  .named-readout {
+    border: 1px solid var(--line); border-radius: 10px; background: var(--paper);
+    display: grid; place-items: center; padding: 22px; text-align: center;
+  }
+  .named-dial {
+    width: 104px; aspect-ratio: 1; border: 10px solid var(--line);
+    border-top-color: var(--accent); border-radius: 50%;
+    animation: named-dial 1ms linear both;
+    animation-timeline: --story-scroll;
+  }
+  @keyframes named-dial { to { rotate: 720deg; border-color: var(--accent-3); } }
+  .named-status { margin: 15px 0 0; font-size: 10px; color: var(--ink-soft); }
+
+  @media (max-width: 680px) {
+    .range-layout, .named-shell { grid-template-columns: 1fr; }
+    .range-frame { height: 390px; }
+    .named-readout { min-height: 190px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .page-progress-fill, .progress-track::before, .local-runner, .local-meter span,
+    .view-card, .range-subject, .range-meter-fill, .named-dial { animation: none; }
+  }
+</style>
+</head>
+<body>
+<div class="page-progress" aria-hidden="true"><span class="page-progress-fill"></span></div>
+<div class="wrap">
+
+  <header>
+    <p class="eyebrow"><a href="index.html">&larr; All demos</a> · CSS Scroll-driven Animations · Level 1</p>
+    <h1>Time, measured in scroll.</h1>
+    <p class="lede">
+      <code>animation-timeline</code> swaps clock time for scroll or visibility
+      progress. Pair it with <code>animation-range</code> to say exactly which
+      part of that journey maps to 0–100%—without a scroll listener updating
+      styles frame by frame.
+    </p>
+    <div id="support" class="support"></div>
+  </header>
+
+  <aside class="syntax-primer" aria-labelledby="syntax-title">
+    <h2 id="syntax-title">Scroll-driven syntax map</h2>
+    <div class="syntax-map">
+      <div class="syntax-group wide">
+        <h3>Attach a timeline to an animation</h3>
+<pre class="syntax-code"><code><span class="k">animation-timeline</span>: <span class="v">auto | none | --name | scroll(…) | view(…)</span> [, …];</code></pre>
+        <p class="syntax-note"><code>auto</code> is normal clock time; <code>none</code> detaches the animation. Commas map timelines to multiple animation names.</p>
+      </div>
+
+      <div class="syntax-group">
+        <h3>Anonymous scroll timeline</h3>
+<pre class="syntax-code"><code><span class="k">animation-timeline</span>: <span class="v">scroll([scroller || axis])</span>;</code></pre>
+        <p class="syntax-note">
+          scroller: <code>nearest | root | self</code><br>
+          axis: <code>block | inline | x | y</code><br>
+          Examples: <code>scroll()</code>, <code>scroll(root block)</code>, <code>scroll(x self)</code>. Arguments may appear in either order; default is <code>nearest block</code>.
+        </p>
+      </div>
+
+      <div class="syntax-group">
+        <h3>Anonymous view timeline</h3>
+<pre class="syntax-code"><code><span class="k">animation-timeline</span>: <span class="v">view([axis || inset{1,2}])</span>;</code></pre>
+        <p class="syntax-note">
+          axis: <code>block | inline | x | y</code><br>
+          inset: <code>auto | &lt;length-percentage&gt;</code><br>
+          Examples: <code>view()</code>, <code>view(inline)</code>, <code>view(block 20% 40%)</code>, <code>view(x 200px auto)</code>. Default is <code>block auto</code>.
+        </p>
+      </div>
+
+      <div class="syntax-group">
+        <h3>Create named timelines</h3>
+<pre class="syntax-code"><code><span class="k">scroll-timeline</span>: <span class="v">--name [axis]</span>;</code></pre>
+<pre class="syntax-code"><code><span class="k">view-timeline</span>: <span class="v">--name [axis || inset{1,2}]</span>;</code></pre>
+        <p class="syntax-note">
+          Put the name first. Longhands: <code>*-timeline-name</code>, <code>*-timeline-axis</code>, and <code>view-timeline-inset</code>. Consume either source with <code>animation-timeline: --name</code>.
+        </p>
+      </div>
+
+      <div class="syntax-group">
+        <h3>Widen a named timeline's reach</h3>
+<pre class="syntax-code"><code><span class="k">timeline-scope</span>: <span class="v">none | all | --name [, --other]</span>;</code></pre>
+        <p class="syntax-note">Set it on a common ancestor when the source and animation are siblings or cousins. It applies only to named timelines—not <code>scroll()</code> or <code>view()</code>.</p>
+      </div>
+
+      <div class="syntax-group wide">
+        <h3>Trim the attachment range</h3>
+<pre class="syntax-code"><code><span class="k">animation-range</span>: <span class="v">&lt;start&gt; [&lt;end&gt;] [, …]</span>;</code></pre>
+<pre class="syntax-code"><code><span class="k">&lt;point&gt;</span> = <span class="v">normal | &lt;length-percentage&gt; | &lt;range-name&gt; [&lt;length-percentage&gt;]</span></code></pre>
+        <p class="syntax-note">
+          range names: <code>cover | contain | entry | exit | entry-crossing | exit-crossing | scroll</code>.
+          Examples: <code>entry</code>, <code>25% 75%</code>, <code>entry 20% exit 80%</code>.
+          Longhands: <code>animation-range-start</code> and <code>animation-range-end</code>.
+        </p>
+      </div>
+    </div>
+    <p class="syntax-order">
+      Order matters: declare the <code>animation</code> shorthand first because
+      it resets <code>animation-timeline</code>. Then attach the timeline and,
+      if needed, set <code>animation-range</code>.
+    </p>
+  </aside>
+
+  <!-- ============ 1 ============ -->
+  <section>
+    <p class="num">01 / SCROLL PROGRESS</p>
+    <h2>The document becomes the clock</h2>
+    <p class="desc">
+      The blue rule fixed to the top of this page—and its twin below—advance
+      from 0% to 100% as the root document scrolls. Scroll farther down, then
+      come back to see the timeline run in reverse.
+    </p>
+
+    <div class="specimen">
+      <div class="progress-explainer">
+        <div class="progress-track" aria-hidden="true"></div>
+        <span class="cue-label">scroll(root block)</span>
+        <div class="progress-scale"><span>0% · page start</span><span>100% · page end</span></div>
+      </div>
+    </div>
+
+<pre><span class="k">.progress</span> {
+  <span class="k">animation</span>: <span class="v">grow 1ms linear both</span>;
+  <span class="k">animation-timeline</span>: <span class="v">scroll(root block)</span>;
+}
+<span class="c">/* scroll position supplies progress; duration is irrelevant */</span></pre>
+  </section>
+
+  <!-- ============ 2 ============ -->
+  <section>
+    <p class="num">02 / SCROLL CONTAINER — interactive</p>
+    <h2>A local scrollbar drives a local animation</h2>
+    <p class="desc">
+      Scroll inside this frame. The named scroll timeline belongs to this box,
+      so the ball and orange meter respond to its scrollbar—not the page.
+      The ball reaches the runway's end exactly when the scroller reaches 100%.
+    </p>
+
+    <div class="specimen">
+      <div class="local-frame">
+        <div class="local-stage">
+          <div class="local-track">
+            <span class="stage-label">0% · scroll container start</span>
+            <div class="local-runway"><div class="local-runner">GO</div></div>
+            <span class="stage-label">100% · scroll container end</span>
+          </div>
+        </div>
+        <div class="local-meter" aria-hidden="true"><span></span></div>
+      </div>
+    </div>
+
+<pre><span class="k">.scroller</span> {
+  <span class="k">overflow-y</span>: <span class="v">auto</span>;
+  <span class="k">scroll-timeline</span>: <span class="v">--local block</span>;
+}
+<span class="k">.ball</span> {
+  <span class="k">animation</span>: <span class="v">run 1ms linear both</span>;
+  <span class="k">animation-timeline</span>: <span class="v">--local</span>;
+}</pre>
+  </section>
+
+  <!-- ============ 3 ============ -->
+  <section>
+    <p class="num">03 / VIEW PROGRESS — interactive</p>
+    <h2>The element's visibility becomes the clock</h2>
+    <p class="desc">
+      Scroll the inner frame. Each card owns an anonymous <code>view()</code>
+      timeline. Its reveal begins when its first pixel crosses the orange entry
+      edge and finishes once the card is fully inside the viewport.
+    </p>
+
+    <div class="specimen">
+      <div class="view-frame">
+        <div class="view-scroller">
+          <div class="view-content">
+            <article class="view-card"><b>One subject</b><span>My own visibility drives my keyframes.</span></article>
+            <article class="view-card"><b>Another timeline</b><span>I start at 0% when I touch the bottom edge.</span></article>
+            <article class="view-card"><b>Fully entered</b><span>I reach 100% when my bottom edge crosses it.</span></article>
+          </div>
+        </div>
+        <div class="edge-cue top">viewport start · content exits here</div>
+        <div class="edge-cue bottom"><span>viewport end · content enters here</span></div>
+      </div>
+    </div>
+
+<pre><span class="k">.card</span> {
+  <span class="k">animation</span>: <span class="v">reveal 1ms linear both</span>;
+  <span class="k">animation-timeline</span>: <span class="v">view(block)</span>;
+  <span class="k">animation-range</span>: <span class="v">entry 0% entry 100%</span>;
+}</pre>
+  </section>
+
+  <!-- ============ 4 ============ -->
+  <section>
+    <p class="num">04 / ANIMATION RANGE — interactive visualizer</p>
+    <h2>See where 0% starts and 100% ends</h2>
+    <p class="desc">
+      Choose a range card, then scroll the outlined viewport. The red band maps
+      the selected attachment range onto the subject's full <code>cover</code>
+      journey; its dashed edges are the animation's real 0% and 100%. The green
+      meter fills only across that range, making the words
+      <code>entry</code>, <code>contain</code>, <code>exit</code>, and
+      <code>cover</code> visible as geometry.
+    </p>
+
+    <div class="specimen range-explorer" id="range-explorer" data-range="entry">
+      <div class="range-layout">
+        <div class="range-frame">
+          <div class="range-viewport" id="range-viewport">
+            <div class="range-scroll-content">
+              <div class="range-subject">
+                <span class="subject-edge top">subject top edge</span>
+                <div><strong>Animation subject</strong><small>watch opacity, scale, and colour</small></div>
+                <span class="subject-edge bottom">subject bottom edge</span>
+              </div>
+            </div>
+          </div>
+          <div class="range-band" aria-hidden="true"></div>
+          <div class="range-edge range-start"><span id="range-start-text">0% · first pixel enters</span></div>
+          <div class="range-edge range-end"><span id="range-end-text">100% · fully inside</span></div>
+          <span class="range-meter-label to">100%</span>
+          <div class="range-meter" aria-hidden="true"><span class="range-meter-fill"></span></div>
+          <span class="range-meter-label from">0%</span>
+        </div>
+
+        <div class="range-key" aria-label="Named range meanings">
+          <button type="button" class="range-key-row" data-key="cover" data-value="cover" aria-pressed="false"><b>cover</b>first pixel enters → last pixel exits</button>
+          <button type="button" class="range-key-row" data-key="entry" data-value="entry" aria-pressed="true"><b>entry</b>first pixel enters → fully inside</button>
+          <button type="button" class="range-key-row" data-key="contain" data-value="contain" aria-pressed="false"><b>contain</b>fully inside at bottom → starts leaving at top</button>
+          <button type="button" class="range-key-row" data-key="exit" data-value="exit" aria-pressed="false"><b>exit</b>starts leaving at top → last pixel exits</button>
+          <button type="button" class="range-key-row" data-key="custom" data-value="entry 25% exit 75%" aria-pressed="false"><b>entry 25% exit 75%</b>trim both ends of a wider journey</button>
+        </div>
+
+        <p class="range-reading" id="range-reading">
+          <b>entry:</b> 0% when the subject's top reaches the viewport bottom;
+          100% when its bottom reaches the viewport bottom.
+        </p>
+      </div>
+
+    </div>
+
+<pre><span class="k">.subject</span> {
+  <span class="k">animation</span>: <span class="v">change 1ms linear both</span>;
+  <span class="k">animation-timeline</span>: <span class="v">view(block)</span>;
+  <span class="k">animation-range</span>: <span class="v" id="range-code-value">entry</span>;
+  <span class="c" id="range-code-comment">/* entry 0% → entry 100% */</span>
+}</pre>
+  </section>
+
+  <!-- ============ 5 ============ -->
+  <section>
+    <p class="num">05 / NAMED TIMELINES — interactive</p>
+    <h2>One scroller, a separate consumer</h2>
+    <p class="desc">
+      Scroll the story on the left. Its <code>--story-scroll</code> timeline is
+      exposed to the shared parent with <code>timeline-scope</code>, letting the
+      sibling dial on the right animate even though it is outside the scroller.
+    </p>
+
+    <div class="specimen">
+      <div class="named-shell">
+        <div class="named-scroller">
+          <div class="named-story">
+            <p><b>0% · source starts</b><br>The scrollbar lives in this panel.</p>
+            <p><b>50% · timeline travels</b><br>The dial is a sibling, not a child of the scroll content.</p>
+            <p><b>100% · source ends</b><br>One named timeline can coordinate several consumers.</p>
+          </div>
+        </div>
+        <div class="named-readout">
+          <div>
+            <div class="named-dial" aria-hidden="true"></div>
+            <p class="named-status">animation-timeline:<br>--story-scroll</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+<pre><span class="k">.group</span>    { <span class="k">timeline-scope</span>: <span class="v">--story-scroll</span>; }
+<span class="k">.scroller</span> { <span class="k">scroll-timeline</span>: <span class="v">--story-scroll block</span>; }
+<span class="k">.sibling</span>  { <span class="k">animation-timeline</span>: <span class="v">--story-scroll</span>; }</pre>
+  </section>
+
+  <!-- ============ 6 ============ -->
+  <section id="support-section">
+    <p class="num">06 / AVAILABILITY</p>
+    <h2>Browser support</h2>
+    <p class="desc">
+      Live data pulled from caniuse in your browser, via the
+      <code>mdn-css_properties_animation-timeline</code> feature. If the live table can't
+      load, a July 2026 snapshot appears instead.
+    </p>
+
+    <div class="specimen">
+      <p class="ciu-embed"
+         data-feature="mdn-css_properties_animation-timeline"
+         data-past="2" data-future="1"></p>
+
+      <div id="ciu-fallback" hidden>
+        <table class="support-table">
+          <caption>Scroll-driven animations — snapshot, July 2026</caption>
+          <thead>
+            <tr><th>Browser</th><th>Support</th><th>Since</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Chrome</td>        <td class="yes">✓ Supported</td>    <td class="since">115</td></tr>
+            <tr><td>Edge</td>          <td class="yes">✓ Supported</td>    <td class="since">115</td></tr>
+            <tr><td>Firefox</td>       <td class="no">✕ Not supported</td> <td class="since">—</td></tr>
+            <tr><td>Safari</td>        <td class="yes">✓ Supported</td>    <td class="since">26.0</td></tr>
+            <tr><td>Chrome Android</td><td class="yes">✓ Supported</td>    <td class="since">115 family</td></tr>
+            <tr><td>Safari iOS</td>    <td class="yes">✓ Supported</td>    <td class="since">26.0</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="ciu-note">
+        <span class="badge">Limited availability · not yet Baseline</span>
+        <a href="https://caniuse.com/mdn-css_properties_animation-timeline">caniuse.com</a>
+        <a href="https://webstatus.dev/features/scroll-driven-animations">webstatus.dev</a>
+      </p>
+    </div>
+  </section>
+
+  <footer>
+    View in Chrome / Edge 115+ or Safari 26+ · spec:
+    <a href="https://www.w3.org/TR/scroll-animations-1/">w3.org/TR/scroll-animations-1</a> ·
+    Firefox needs a static or JavaScript fallback.
+  </footer>
+
+</div>
+
+<script>
+  // ---- browser-support detection ----
+  const banner = document.getElementById('support');
+  const supported = CSS.supports('animation-timeline', 'scroll()');
+  if (supported) {
+    banner.className = 'support ok';
+    banner.innerHTML = '<b>✓ Your browser supports animation-timeline.</b> Scroll every framed specimen—the motion is driven by CSS.';
+  } else {
+    banner.className = 'support no';
+    banner.innerHTML = '<b>✕ This browser does not support animation-timeline.</b> The diagrams remain readable, but the scroll-linked motion is static.';
+  }
+
+  // ---- animation-range visualizer ----
+  const rangeExplorer = document.getElementById('range-explorer');
+  const rangeViewport = document.getElementById('range-viewport');
+  const rangeSubject = rangeExplorer.querySelector('.range-subject');
+  const rangeReading = document.getElementById('range-reading');
+  const rangeStartText = document.getElementById('range-start-text');
+  const rangeEndText = document.getElementById('range-end-text');
+  const rangeCodeValue = document.getElementById('range-code-value');
+  const rangeCodeComment = document.getElementById('range-code-comment');
+  const rangeButtons = [...rangeExplorer.querySelectorAll('.range-key-row')];
+  const rangeCopy = {
+    entry: '<b>entry:</b> 0% when the subject\'s top reaches the viewport bottom; 100% when its bottom reaches the viewport bottom.',
+    contain: '<b>contain:</b> 0% once the subject is fully inside at the bottom; 100% just before it starts crossing the top.',
+    exit: '<b>exit:</b> 0% when the subject\'s top reaches the viewport top; 100% when its bottom reaches the viewport top.',
+    cover: '<b>cover:</b> the full crossing—0% at the first entering pixel, 100% at the last exiting pixel.',
+    custom: '<b>entry 25% exit 75%:</b> start one quarter through entry and finish three quarters through exit.'
+  };
+  const rangeGuideCopy = {
+    entry: ['0% · first pixel enters', '100% · fully inside'],
+    contain: ['0% · fully inside', '100% · starts leaving'],
+    exit: ['0% · starts leaving', '100% · last pixel exits'],
+    cover: ['0% · first pixel enters', '100% · last pixel exits'],
+    custom: ['0% · 25% through entry', '100% · 75% through exit']
+  };
+  const rangeCodeComments = {
+    entry: '/* entry 0% → entry 100% */',
+    contain: '/* contain 0% → contain 100% */',
+    exit: '/* exit 0% → exit 100% */',
+    cover: '/* cover 0% → cover 100% */',
+    custom: '/* entry 25% → exit 75% */'
+  };
+
+  function updateRangeGuide(key) {
+    const viewportSize = rangeViewport.clientHeight;
+    const subjectSize = rangeSubject.offsetHeight;
+    const coverDistance = viewportSize + subjectSize;
+    const entryEnd = subjectSize / coverDistance * 100;
+    const exitStart = viewportSize / coverDistance * 100;
+    const ranges = {
+      cover: [0, 100],
+      entry: [0, entryEnd],
+      contain: [entryEnd, exitStart],
+      exit: [exitStart, 100],
+      custom: [entryEnd * .25, exitStart + entryEnd * .75]
+    };
+    const [start, end] = ranges[key];
+    const [startCopy, endCopy] = rangeGuideCopy[key];
+    const rangeFrame = rangeViewport.parentElement;
+    rangeFrame.style.setProperty('--range-start', start + '%');
+    rangeFrame.style.setProperty('--range-end', end + '%');
+    rangeStartText.textContent = startCopy;
+    rangeEndText.textContent = endCopy;
+  }
+
+  rangeButtons.forEach(button => {
+    button.addEventListener('click', () => {
+      rangeExplorer.style.setProperty('--chosen-range', button.dataset.value);
+      rangeExplorer.dataset.range = button.dataset.key;
+      rangeReading.innerHTML = rangeCopy[button.dataset.key];
+      rangeCodeValue.textContent = button.dataset.value;
+      rangeCodeComment.textContent = rangeCodeComments[button.dataset.key];
+      rangeButtons.forEach(item => item.setAttribute('aria-pressed', String(item === button)));
+      updateRangeGuide(button.dataset.key);
+      rangeViewport.scrollTop = 0;
+    });
+  });
+  updateRangeGuide('entry');
+  window.addEventListener('resize', () => updateRangeGuide(rangeExplorer.dataset.range));
+  rangeViewport.scrollTop = 0;
+
+  // ---- caniuse widget + graceful fallback ----
+  (function loadCaniuse() {
+    document.querySelector('.ciu-embed').dataset.theme = document.documentElement.dataset.theme;
+    const s = document.createElement('script');
+    s.type = 'module';
+    s.src = 'https://caniuse-embed.vercel.app/embed.js';
+    s.onerror = revealFallback;
+    document.body.appendChild(s);
+
+    function revealFallback() {
+      document.getElementById('ciu-fallback').hidden = false;
+    }
+    setTimeout(() => {
+      const rendered = document.querySelector('.ciu-embed iframe');
+      if (!rendered) revealFallback();
+    }, 3500);
+  })();
+</script>
+</body>
+</html>
