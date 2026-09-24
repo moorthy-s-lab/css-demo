@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CSS light-dark() — two colors, one decision</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Hanken+Grotesk:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<script>document.documentElement.dataset.theme = localStorage.theme || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');</script>
+<script src="theme.js" defer></script>
+<script src="toc.js" defer></script>
+<style>
+  /* Fixed light and dark demo colors, expressed through the shared palette.
+     The dark-page mapping keeps each semantic demo color visually stable. */
+  :root {
+    --demo-light-surface: var(--panel);
+    --demo-light-text: var(--ink);
+    --demo-dark-surface: var(--ink);
+    --demo-dark-text: var(--panel);
+  }
+  :root[data-theme="dark"] {
+    --demo-light-surface: var(--ink);
+    --demo-light-text: var(--paper);
+    --demo-dark-surface: var(--paper);
+    --demo-dark-text: var(--ink);
+  }
+
+  .theme-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+  }
+  .theme-card {
+    min-height: 168px;
+    padding: 22px;
+    border: 1px solid currentColor;
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 28px;
+  }
+  .theme-card strong {
+    font-family: "Space Grotesk", sans-serif;
+    font-size: 20px;
+  }
+  .theme-card p { margin: 5px 0 0; opacity: 0.72; }
+  .theme-chip {
+    align-self: flex-start;
+    border: 1px solid currentColor;
+    border-radius: 999px;
+    padding: 4px 9px;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 10px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  /* ===== DEMO 1 — traditional media-query states ===== */
+  .legacy-light {
+    background: var(--demo-light-surface);
+    color: var(--demo-light-text);
+  }
+  .legacy-dark {
+    background: var(--demo-dark-surface);
+    color: var(--demo-dark-text);
+  }
+
+  /* ===== DEMO 2 — the function in its smallest useful form ===== */
+  .function-card {
+    background: light-dark(var(--demo-light-surface), var(--demo-dark-surface));
+    color: light-dark(var(--demo-light-text), var(--demo-dark-text));
+  }
+  .force-light { color-scheme: light; }
+  .force-dark { color-scheme: dark; }
+
+  /* ===== DEMO 3 — interactive used color scheme ===== */
+  .scheme-stage {
+    color-scheme: var(--scheme, light dark);
+    min-height: 240px;
+    border-radius: 12px;
+    padding: 28px;
+    background: light-dark(var(--demo-light-surface), var(--demo-dark-surface));
+    color: light-dark(var(--demo-light-text), var(--demo-dark-text));
+    display: grid;
+    place-items: center;
+    text-align: center;
+    border: 1px solid currentColor;
+  }
+  .scheme-stage .orb {
+    width: 72px;
+    aspect-ratio: 1;
+    margin: 0 auto 18px;
+    border: 2px solid currentColor;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    font-family: "Space Grotesk", sans-serif;
+    font-size: 27px;
+    font-weight: 700;
+  }
+  .scheme-stage h3 {
+    font-family: "Space Grotesk", sans-serif;
+    font-size: 24px;
+    margin: 0;
+  }
+  .scheme-stage p { margin: 6px 0 0; opacity: 0.72; }
+
+  /* ===== DEMO 4 — semantic theme tokens ===== */
+  .token-zone {
+    --surface: light-dark(var(--demo-light-surface), var(--demo-dark-surface));
+    --on-surface: light-dark(var(--demo-light-text), var(--demo-dark-text));
+    --action: light-dark(var(--accent), var(--accent-2));
+    border-radius: 12px;
+    padding: 18px;
+    background: var(--surface);
+    color: var(--on-surface);
+    border: 1px solid currentColor;
+  }
+  .token-zone h3 {
+    font-family: "Space Grotesk", sans-serif;
+    margin: 0 0 6px;
+  }
+  .token-zone p { margin: 0 0 18px; opacity: 0.72; }
+  .token-zone a {
+    color: var(--action);
+    font-family: "JetBrains Mono", monospace;
+    font-size: 12px;
+    font-weight: 500;
+  }
+
+  /* ===== DEMO 5 — nested, scoped schemes ===== */
+  .scope-shell {
+    color-scheme: light;
+    padding: 22px;
+    border-radius: 12px;
+    background: light-dark(var(--demo-light-surface), var(--demo-dark-surface));
+    color: light-dark(var(--demo-light-text), var(--demo-dark-text));
+    border: 1px solid currentColor;
+  }
+  .scope-shell h3,
+  .scope-panel h4 {
+    font-family: "Space Grotesk", sans-serif;
+    margin: 0;
+  }
+  .scope-shell > p,
+  .scope-panel p { margin: 5px 0 0; opacity: 0.72; }
+  .scope-panel {
+    color-scheme: dark;
+    margin-top: 22px;
+    padding: 20px;
+    border-radius: 10px;
+    background: light-dark(var(--demo-light-surface), var(--demo-dark-surface));
+    color: light-dark(var(--demo-light-text), var(--demo-dark-text));
+    border: 1px solid currentColor;
+  }
+
+  /* ===== DEMO 6 — fallback declaration first ===== */
+  .fallback-card {
+    color-scheme: dark;
+    min-height: 168px;
+    padding: 22px;
+    border-radius: 12px;
+    background: var(--demo-light-surface);
+    color: var(--demo-light-text);
+    background: light-dark(var(--demo-light-surface), var(--demo-dark-surface));
+    color: light-dark(var(--demo-light-text), var(--demo-dark-text));
+    border: 1px solid currentColor;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+  .fallback-card strong {
+    font-family: "Space Grotesk", sans-serif;
+    font-size: 20px;
+  }
+  .fallback-card p { margin: 5px 0 0; opacity: 0.72; }
+
+  @media (max-width: 640px) {
+    .theme-grid { grid-template-columns: 1fr; }
+    .theme-card { min-height: 148px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <p class="eyebrow"><a href="index.html">← All demos</a> · CSS light-dark() · Color Module Level 5</p>
+    <h1>Two colors. One decision.</h1>
+    <p class="lede">
+      <code>light-dark()</code> chooses between paired values using an element's active
+      <code>color-scheme</code>. It turns repeated theme overrides into compact,
+      local declarations while keeping the user's preference in charge.
+    </p>
+    <div id="support" class="support"></div>
+  </header>
+
+  <!-- ============ 1 ============ -->
+  <section>
+    <p class="num">01 / BEFORE LIGHT-DARK()</p>
+    <h2>The media-query pattern</h2>
+    <p class="desc">
+      Traditionally, a light palette is declared first and every theme token is
+      reassigned inside <code>@media (prefers-color-scheme: dark)</code>. It works,
+      but the theme logic lives in a distant second block and grows with the palette.
+      Both possible states are shown here at once for comparison.
+    </p>
+
+    <div class="specimen">
+      <div class="theme-grid">
+        <article class="theme-card legacy-light">
+          <div>
+            <strong>Morning notes</strong>
+            <p>The default declarations supply the light palette.</p>
+          </div>
+          <span class="theme-chip">default</span>
+        </article>
+        <article class="theme-card legacy-dark">
+          <div>
+            <strong>Evening notes</strong>
+            <p>The media query reassigns the same theme tokens.</p>
+          </div>
+          <span class="theme-chip">media query</span>
+        </article>
+      </div>
+    </div>
+
+<pre><span class="k">:root</span> {
+  <span class="k">--surface</span>: <span class="v">var(--light-surface)</span>;
+  <span class="k">--text</span>:    <span class="v">var(--light-text)</span>;
+}
+
+<span class="k">@media</span> (<span class="v">prefers-color-scheme: dark</span>) {
+  <span class="k">:root</span> {
+    <span class="k">--surface</span>: <span class="v">var(--dark-surface)</span>;
+    <span class="k">--text</span>:    <span class="v">var(--dark-text)</span>;
+  }
+}
+
+<span class="k">.card</span> {
+  <span class="k">background</span>: <span class="v">var(--surface)</span>;
+  <span class="k">color</span>: <span class="v">var(--text)</span>;
+}</pre>
+  </section>
+
+  <!-- ============ 2 ============ -->
+  <section>
+    <p class="num">02 / FIRST SWITCH</p>
+    <h2>Put both choices beside the property</h2>
+    <p class="desc">
+      Declare support for both schemes, then pass the light value first and the dark
+      value second. The browser resolves each function from the element's used
+      <code>color-scheme</code>; the two forced cards expose both results.
+    </p>
+
+    <div class="specimen">
+      <div class="theme-grid">
+        <article class="theme-card function-card force-light">
+          <div>
+            <strong>Morning notes</strong>
+            <p>The first argument wins in a light scheme.</p>
+          </div>
+          <span class="theme-chip">light</span>
+        </article>
+        <article class="theme-card function-card force-dark">
+          <div>
+            <strong>Evening notes</strong>
+            <p>The second argument wins in a dark scheme.</p>
+          </div>
+          <span class="theme-chip">dark</span>
+        </article>
+      </div>
+    </div>
+
+<pre><span class="k">:root</span> {
+  <span class="k">color-scheme</span>: <span class="v">light dark</span>;
+}
+
+<span class="k">.card</span> {
+  <span class="k">background</span>: <span class="v">light-dark(var(--light-surface), var(--dark-surface))</span>;
+  <span class="k">color</span>:      <span class="v">light-dark(var(--light-text), var(--dark-text))</span>;
+}</pre>
+  </section>
+
+  <!-- ============ 3 ============ -->
+  <section>
+    <p class="num">03 / FORCE THE SCHEME — interactive</p>
+    <h2>Preference by default, overrides when needed</h2>
+    <p class="desc">
+      <code>light dark</code> follows the user's preference. A single keyword forces
+      a scheme on this subtree—useful for previews and components that must retain a
+      specific appearance, but not as a reason to ignore a user's choice.
+    </p>
+
+    <div class="specimen">
+      <div class="scheme-stage" id="scheme-stage">
+        <div>
+          <div class="orb" aria-hidden="true">Aa</div>
+          <h3 id="scheme-heading">System preference</h3>
+          <p><code>light-dark()</code> reads this element's used scheme.</p>
+        </div>
+      </div>
+
+      <div class="controls">
+        <div class="ctl">
+          <label for="scheme-select">color-scheme <b id="scheme-value">light dark</b></label>
+          <select id="scheme-select">
+            <option value="light dark">System preference</option>
+            <option value="light">Force light</option>
+            <option value="dark">Force dark</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+<pre><span class="k">.preview</span> {
+  <span class="k">color-scheme</span>: <span class="v">light dark</span>; <span class="c">/* follow preference */</span>
+}
+<span class="k">.preview.light</span> { <span class="k">color-scheme</span>: <span class="v">light</span>; }
+<span class="k">.preview.dark</span>  { <span class="k">color-scheme</span>: <span class="v">dark</span>; }</pre>
+  </section>
+
+  <!-- ============ 4 ============ -->
+  <section>
+    <p class="num">04 / THEME TOKENS</p>
+    <h2>Resolve semantic colors once</h2>
+    <p class="desc">
+      Pair each semantic token at its definition, then let components consume plain
+      names such as <code>--surface</code> and <code>--on-surface</code>. Theme logic
+      stays centralized without a second selector tree.
+    </p>
+
+    <div class="specimen">
+      <div class="theme-grid">
+        <article class="token-zone force-light">
+          <h3>Project Atlas</h3>
+          <p>Three paired tokens style the whole component.</p>
+          <a href="#theme-tokens">Open workspace →</a>
+        </article>
+        <article class="token-zone force-dark">
+          <h3>Project Atlas</h3>
+          <p>The component CSS is identical in either scheme.</p>
+          <a href="#theme-tokens">Open workspace →</a>
+        </article>
+      </div>
+    </div>
+
+<pre><span class="k">:root</span> {
+  <span class="k">--surface</span>:    <span class="v">light-dark(var(--light-surface), var(--dark-surface))</span>;
+  <span class="k">--on-surface</span>: <span class="v">light-dark(var(--light-text), var(--dark-text))</span>;
+  <span class="k">--action</span>:     <span class="v">light-dark(var(--light-action), var(--dark-action))</span>;
+}
+
+<span class="k">.card</span> {
+  <span class="k">background</span>: <span class="v">var(--surface)</span>;
+  <span class="k">color</span>: <span class="v">var(--on-surface)</span>;
+}
+<span class="k">.card a</span> { <span class="k">color</span>: <span class="v">var(--action)</span>; }</pre>
+  </section>
+
+  <!-- ============ 5 ============ -->
+  <section>
+    <p class="num">05 / SCOPED THEMES</p>
+    <h2>Schemes inherit; components can reset them</h2>
+    <p class="desc">
+      Because <code>color-scheme</code> inherits, every descendant normally resolves
+      the same way. A nested component can establish a new scheme, and its existing
+      <code>light-dark()</code> declarations immediately follow that local context.
+    </p>
+
+    <div class="specimen">
+      <div class="scope-shell">
+        <h3>Light workspace</h3>
+        <p>The outer subtree fixes a light used scheme.</p>
+        <aside class="scope-panel">
+          <h4>Dark command palette</h4>
+          <p>This nested subtree resets only <code>color-scheme</code>.</p>
+        </aside>
+      </div>
+    </div>
+
+<pre><span class="k">.workspace</span> {
+  <span class="k">color-scheme</span>: <span class="v">light</span>;
+  <span class="k">background</span>: <span class="v">light-dark(var(--light-surface), var(--dark-surface))</span>;
+}
+
+<span class="k">.command-palette</span> {
+  <span class="k">color-scheme</span>: <span class="v">dark</span>;
+  <span class="c">/* the same light-dark() tokens now resolve to dark */</span>
+}</pre>
+  </section>
+
+  <!-- ============ 6 ============ -->
+  <section>
+    <p class="num">06 / FALLBACKS</p>
+    <h2>Put the older declaration first</h2>
+    <p class="desc">
+      Unsupported functional colors invalidate only their declaration. Place a safe
+      light value first, then override it with <code>light-dark()</code>; older
+      browsers keep the first declaration while modern browsers use the second.
+    </p>
+
+    <div class="specimen">
+      <div class="fallback-card">
+        <div>
+          <strong>Progressively themed</strong>
+          <p>Modern browsers show the forced dark result.</p>
+        </div>
+        <span class="theme-chip">fallback first</span>
+      </div>
+    </div>
+
+<pre><span class="k">.card</span> {
+  <span class="c">/* safe fallback */</span>
+  <span class="k">background</span>: <span class="v">var(--light-surface)</span>;
+  <span class="k">color</span>: <span class="v">var(--light-text)</span>;
+
+  <span class="c">/* supporting browsers override it */</span>
+  <span class="k">background</span>: <span class="v">light-dark(var(--light-surface), var(--dark-surface))</span>;
+  <span class="k">color</span>: <span class="v">light-dark(var(--light-text), var(--dark-text))</span>;
+}</pre>
+  </section>
+
+  <!-- ============ 7 ============ -->
+  <section id="support-section">
+    <p class="num">07 / AVAILABILITY</p>
+    <h2>Browser support</h2>
+    <p class="desc">
+      Live data pulled from caniuse in your browser, via the
+      <code>mdn-css_types_color_light-dark</code> feature. If the live table cannot
+      load, a current snapshot appears instead.
+    </p>
+
+    <div class="specimen">
+      <p class="ciu-embed"
+         data-feature="mdn-css_types_color_light-dark"
+         data-past="2" data-future="1"></p>
+
+      <div id="ciu-fallback" hidden>
+        <table class="support-table">
+          <caption>CSS light-dark() color values — snapshot, July 2026</caption>
+          <thead>
+            <tr><th>Browser</th><th>Support</th><th>Since</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Chrome</td>         <td class="yes">✓ Supported</td><td class="since">123</td></tr>
+            <tr><td>Edge</td>           <td class="yes">✓ Supported</td><td class="since">123</td></tr>
+            <tr><td>Firefox</td>        <td class="yes">✓ Supported</td><td class="since">120</td></tr>
+            <tr><td>Safari</td>         <td class="yes">✓ Supported</td><td class="since">17.5</td></tr>
+            <tr><td>Chrome Android</td> <td class="yes">✓ Supported</td><td class="since">123</td></tr>
+            <tr><td>Safari iOS</td>     <td class="yes">✓ Supported</td><td class="since">17.5</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="ciu-note">
+        <span class="badge">Baseline 2024 · newly available</span>
+        <a href="https://caniuse.com/mdn-css_types_color_light-dark">caniuse.com</a>
+        <a href="https://webstatus.dev/features/light-dark">webstatus.dev</a>
+      </p>
+    </div>
+  </section>
+
+  <footer>
+    View in Chrome / Edge 123+, Firefox 120+, or Safari 17.5+ · spec:
+    <a href="https://www.w3.org/TR/css-color-5/#light-dark">CSS Color 5</a> ·
+    keep a preceding color declaration for older browsers.
+  </footer>
+
+</div>
+
+<script>
+  // ---- browser-support detection ----
+  const banner = document.getElementById('support');
+  const supported = CSS.supports('color', 'light-dark(white, black)');
+  if (supported) {
+    banner.className = 'support ok';
+    banner.innerHTML = '<b>✓ Your browser supports light-dark().</b> Every paired value below is live CSS.';
+  } else {
+    banner.className = 'support no';
+    banner.innerHTML = '<b>✕ This browser does not support light-dark().</b> Fallback declarations will remain active.';
+  }
+
+  // ---- demo 3 control ----
+  const schemeStage = document.getElementById('scheme-stage');
+  const schemeSelect = document.getElementById('scheme-select');
+  const schemeValue = document.getElementById('scheme-value');
+  const schemeHeading = document.getElementById('scheme-heading');
+  const schemeLabels = {
+    'light dark': 'System preference',
+    light: 'Forced light',
+    dark: 'Forced dark'
+  };
+  const applyScheme = () => {
+    schemeStage.style.setProperty('--scheme', schemeSelect.value);
+    schemeValue.textContent = schemeSelect.value;
+    schemeHeading.textContent = schemeLabels[schemeSelect.value];
+  };
+  schemeSelect.addEventListener('change', applyScheme);
+  applyScheme();
+
+  // ---- caniuse widget + graceful fallback ----
+  (function loadCaniuse() {
+    document.querySelector('.ciu-embed').dataset.theme = document.documentElement.dataset.theme;
+    const s = document.createElement('script');
+    s.type = 'module';
+    s.src = 'https://caniuse-embed.vercel.app/embed.js';
+    s.onerror = revealFallback;
+    document.body.appendChild(s);
+
+    function revealFallback() {
+      document.getElementById('ciu-fallback').hidden = false;
+    }
+    setTimeout(() => {
+      const rendered = document.querySelector('.ciu-embed iframe');
+      if (!rendered) revealFallback();
+    }, 3500);
+  })();
+</script>
+</body>
+</html>
