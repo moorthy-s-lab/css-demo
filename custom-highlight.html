@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CSS Custom Highlight API — specimen</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Hanken+Grotesk:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<script>document.documentElement.dataset.theme = localStorage.theme || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');</script>
+<script src="theme.js" defer></script>
+<script src="toc.js" defer></script>
+<style>
+  /* Feature-specific CSS for this demo only — shared palette, typography,
+     masthead, specimen scaffolding, controls, code blocks, and the caniuse
+     widget all live in styles.css. */
+
+  /* bullet-style lede / section descriptions */
+  ul.lede, ul.desc { padding-left: 1.2em; }
+  ul.lede li, ul.desc li { margin: 4px 0; }
+
+  .demo-text {
+    margin: 0;
+    font-size: 19px;
+    line-height: 1.7;
+    max-width: 62ch;
+  }
+  .demo-meta {
+    margin: 14px 0 0;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 12px;
+    color: var(--ink-soft);
+  }
+  .demo-meta b { color: var(--ink); font-weight: 500; }
+
+  /* ===== DEMO 0 — pick a range ===== */
+  ::highlight(d0-pick) {
+    background-color: var(--accent-3);
+    color: var(--paper);
+  }
+
+  /* ===== DEMO 2 — live search ===== */
+  .demo-search {
+    width: 100%;
+    max-width: 320px;
+    margin-bottom: 18px;
+    padding: 9px 12px;
+    font: 15px "JetBrains Mono", monospace;
+    color: var(--ink);
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+  }
+  .demo-search:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+  ::highlight(d2-search) {
+    background-color: var(--accent-2);
+    color: var(--paper);
+  }
+
+  /* ===== DEMO 3 — which properties apply ===== */
+  .demo-3 {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 14px;
+  }
+  .demo-3 .cell {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    align-items: flex-start;
+    text-align: left;
+    padding: 16px;
+  }
+  .demo-3 .cell p { margin: 0; font-size: 17px; line-height: 1.6; }
+  .demo-3 code { font-size: 11px; }
+  .demo-3 .tag {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 10px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 3px 8px;
+    border-radius: 999px;
+    border: 1px solid currentColor;
+  }
+  .demo-3 .tag.ok { color: var(--accent-3); }
+  .demo-3 .tag.no { color: var(--accent-2); }
+
+  ::highlight(d3-color)      { color: var(--accent); }
+  ::highlight(d3-bg)         { background-color: var(--accent); color: var(--paper); }
+  ::highlight(d3-deco)       { text-decoration: underline 3px var(--accent-2); }
+  ::highlight(d3-shadow)     { text-shadow: 0 0 6px var(--accent-3); }
+  /* not in the allowed list — both are silently ignored */
+  ::highlight(d3-weight)     { font-weight: 900; }
+  ::highlight(d3-padding)    { padding: 0 20px; }
+
+  /* ===== DEMO 4 — overlap & priority ===== */
+  ::highlight(d4-a) { background-color: var(--accent);   color: var(--paper); }
+  ::highlight(d4-b) { background-color: var(--accent-2); color: var(--paper); }
+  .demo-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-top: 14px;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 12px;
+    color: var(--ink-soft);
+  }
+  .demo-legend i {
+    display: inline-block;
+    width: 12px; height: 12px;
+    margin-right: 6px;
+    vertical-align: -1px;
+    border-radius: 3px;
+  }
+
+  /* ===== DEMO 5 — type ===== */
+  ::highlight(d5-spell) {
+    text-decoration: wavy underline 1.5px var(--accent-2);
+    text-underline-offset: 3px;
+  }
+  ::highlight(d5-grammar) {
+    text-decoration: wavy underline 1.5px var(--accent);
+    text-underline-offset: 3px;
+  }
+
+  /* ===== DEMO 6 — live vs static ranges ===== */
+  .demo-6 {
+    display: grid;
+    gap: 14px;
+  }
+  .demo-6 .row {
+    display: grid;
+    grid-template-columns: 110px 1fr;
+    gap: 14px;
+    align-items: center;
+  }
+  .demo-6 .row > span {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 12px;
+    color: var(--ink-soft);
+  }
+  .demo-edit {
+    padding: 10px 14px;
+    font-size: 18px;
+    line-height: 1.6;
+    background: var(--paper);
+    border: 1px dashed var(--line);
+    border-radius: 8px;
+  }
+  .demo-edit:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+  ::highlight(d6-live)   { background-color: var(--accent);   color: var(--paper); }
+  ::highlight(d6-static) { background-color: var(--accent-2); color: var(--paper); }
+  .demo-btn {
+    justify-self: start;
+    padding: 6px 14px;
+    font: 12px "JetBrains Mono", monospace;
+    color: var(--ink);
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    cursor: pointer;
+  }
+  .demo-btn:hover { border-color: var(--accent); }
+
+  @media (max-width: 560px) {
+    .demo-6 .row { grid-template-columns: 1fr; gap: 6px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <p class="eyebrow"><a href="index.html">← All demos</a> · CSS Custom Highlight API · Pseudo-Elements Level 4</p>
+    <h1>Paint text without touching the DOM.</h1>
+    <ul class="lede">
+      <li>Mark any text with a <code>Range</code> in JS.</li>
+      <li>Style it with <code>::highlight(name)</code> in CSS.</li>
+      <li>No <code>&lt;span&gt;</code> or <code>&lt;mark&gt;</code> wrappers — the DOM stays untouched.</li>
+    </ul>
+    <div id="support" class="support"></div>
+  </header>
+
+  <!-- ============ 1 ============ -->
+  <section>
+    <p class="num">01 / BASICS — interactive</p>
+    <h2>A range, a highlight, a pseudo-element</h2>
+    <ul class="desc">
+      <li><code>new Range()</code> → pick the text (a start and an end offset).</li>
+      <li><code>new Highlight(range)</code> → group it.</li>
+      <li><code>CSS.highlights.set(name, …)</code> → name it.</li>
+      <li><code>::highlight(name)</code> → style it.</li>
+      <li>Try it: select words with your mouse, or drag the <code>start</code> / <code>end</code> sliders.</li>
+      <li>The highlight stays after you click away — unlike the native selection.</li>
+    </ul>
+
+    <div class="specimen">
+      <p class="demo-text" id="d0">A range points at a character offset where it starts and another where it ends, and everything between them can be painted.</p>
+      <p class="demo-meta">start <b id="d0-s-val">0</b> · end <b id="d0-e-val">0</b> · range.toString() → "<b id="d0-str"></b>"</p>
+
+      <div class="controls">
+        <div class="ctl">
+          <label>start <b id="d0-s-lbl">0</b></label>
+          <input type="range" id="d0-s" min="0" value="2">
+        </div>
+        <div class="ctl">
+          <label>end <b id="d0-e-lbl">0</b></label>
+          <input type="range" id="d0-e" min="0" value="7">
+        </div>
+      </div>
+    </div>
+
+<pre><span class="k">const</span> text  = document.<span class="v">querySelector</span>(<span class="v">'#d0'</span>).firstChild;  <span class="c">// the text node</span>
+<span class="k">const</span> range = <span class="k">new</span> <span class="v">Range</span>();
+range.<span class="v">setStart</span>(text, start);   <span class="c">// character offset</span>
+range.<span class="v">setEnd</span>(text, end);
+CSS.highlights.<span class="v">set</span>(<span class="v">'d0-pick'</span>, <span class="k">new</span> <span class="v">Highlight</span>(range));
+
+<span class="c">// mouse selection → copy its range into the highlight</span>
+document.<span class="v">addEventListener</span>(<span class="v">'selectionchange'</span>, () =&gt; {
+  <span class="k">const</span> sel = getSelection();
+  <span class="k">if</span> (sel.isCollapsed) <span class="k">return</span>;
+  <span class="k">const</span> r = sel.<span class="v">getRangeAt</span>(<span class="v">0</span>);
+  <span class="k">if</span> (r.startContainer === text &amp;&amp; r.endContainer === text)
+    CSS.highlights.<span class="v">set</span>(<span class="v">'d0-pick'</span>, <span class="k">new</span> <span class="v">Highlight</span>(r.<span class="v">cloneRange</span>()));
+});
+
+<span class="c">/* CSS */</span>
+<span class="k">::highlight(d0-pick)</span> {
+  <span class="k">background-color</span>: var(--accent-3);
+  <span class="k">color</span>: var(--paper);
+}
+
+<span class="c">// Helper for the demos below: a Range over `word` in text node `node`,</span>
+<span class="c">// searching from offset `from`. Returns null if not found.</span>
+<span class="k">function</span> rangeOf(node, word, from = <span class="v">0</span>) {
+  <span class="k">const</span> start = node.data.<span class="v">toLowerCase</span>().<span class="v">indexOf</span>(word.<span class="v">toLowerCase</span>(), from);
+  <span class="k">if</span> (start === <span class="v">-1</span>) <span class="k">return</span> <span class="k">null</span>;
+  <span class="k">const</span> range = <span class="k">new</span> <span class="v">Range</span>();
+  range.<span class="v">setStart</span>(node, start);
+  range.<span class="v">setEnd</span>(node, start + word.length);
+  <span class="k">return</span> range;
+}</pre>
+  </section>
+
+  <!-- ============ 2 ============ -->
+  <section>
+    <p class="num">02 / SEARCH — interactive</p>
+    <h2>Find-in-page, one highlight, many ranges</h2>
+    <ul class="desc">
+      <li>Each match = one <code>Range</code>.</li>
+      <li>All matches share one <code>Highlight</code>.</li>
+      <li>Ranges can cross element boundaries (see the bold text).</li>
+      <li>Element count stays the same — nothing is inserted.</li>
+    </ul>
+
+    <div class="specimen">
+      <input class="demo-search" id="d2-q" type="search" value="range" placeholder="search the text…" aria-label="Search text">
+      <div id="d2">
+        <p class="demo-text">
+          A <em>range</em> marks a start and an end inside the document. A
+          highlight can hold many ranges at once, and a range can cross element
+          boundaries — like this one, which passes through <strong>bold text
+          and back out</strong> again. Search engines, spell checkers and
+          collaborative editors all need to paint ranges without rearranging
+          the markup underneath.
+        </p>
+      </div>
+      <p class="demo-meta">matches <b id="d2-count">0</b> · elements in paragraph <b id="d2-nodes">0</b></p>
+    </div>
+
+<pre><span class="c">// rangeOf() is the helper from 01</span>
+<span class="k">const</span> box   = document.<span class="v">querySelector</span>(<span class="v">'#d2'</span>);    <span class="c">// text to search</span>
+<span class="k">const</span> input = document.<span class="v">querySelector</span>(<span class="v">'#d2-q'</span>);  <span class="c">// search box</span>
+
+input.<span class="v">addEventListener</span>(<span class="v">'input'</span>, () =&gt; {
+  <span class="k">const</span> q = input.value;                        <span class="c">// search word</span>
+  <span class="k">const</span> ranges = [];
+
+  <span class="c">// visit every text node inside the box</span>
+  <span class="k">const</span> walker = document.<span class="v">createTreeWalker</span>(box, NodeFilter.SHOW_TEXT);
+  <span class="k">while</span> (q &amp;&amp; walker.<span class="v">nextNode</span>()) {
+    <span class="k">const</span> node = walker.currentNode;
+    <span class="k">let</span> r = rangeOf(node, q);
+    <span class="k">while</span> (r) {                                 <span class="c">// one Range per match</span>
+      ranges.<span class="v">push</span>(r);
+      r = rangeOf(node, q, r.endOffset);        <span class="c">// look after this match</span>
+    }
+  }
+
+  <span class="c">// one Highlight holds every match</span>
+  CSS.highlights.<span class="v">set</span>(<span class="v">'d2-search'</span>, <span class="k">new</span> <span class="v">Highlight</span>(...ranges));
+});
+
+<span class="c">/* CSS */</span>
+<span class="k">::highlight(d2-search)</span> {
+  <span class="k">background-color</span>: var(--accent-2);
+  <span class="k">color</span>: var(--paper);
+}</pre>
+  </section>
+
+  <!-- ============ 3 ============ -->
+  <section>
+    <p class="num">03 / ALLOWED PROPERTIES</p>
+    <h2>Paint only, never layout</h2>
+    <ul class="desc">
+      <li>✓ Paint properties: <code>color</code>, <code>background-color</code>, <code>text-decoration</code>, <code>text-shadow</code>.</li>
+      <li>✗ Layout properties: <code>font-weight</code>, <code>padding</code> — silently ignored.</li>
+      <li>Why: a highlight can't move or resize text.</li>
+    </ul>
+
+    <div class="specimen">
+      <div class="demo-3" id="d3">
+        <div class="cell"><span class="tag ok">applies</span><code>color</code><p data-hl="d3-color">Some quiet words.</p></div>
+        <div class="cell"><span class="tag ok">applies</span><code>background-color</code><p data-hl="d3-bg">Some quiet words.</p></div>
+        <div class="cell"><span class="tag ok">applies</span><code>text-decoration</code><p data-hl="d3-deco">Some quiet words.</p></div>
+        <div class="cell"><span class="tag ok">applies</span><code>text-shadow</code><p data-hl="d3-shadow">Some quiet words.</p></div>
+        <div class="cell"><span class="tag no">ignored</span><code>font-weight: 900</code><p data-hl="d3-weight">Some quiet words.</p></div>
+        <div class="cell"><span class="tag no">ignored</span><code>padding: 0 20px</code><p data-hl="d3-padding">Some quiet words.</p></div>
+      </div>
+    </div>
+
+<pre><span class="c">// rangeOf() is the helper from 01 — same text in every card</span>
+<span class="k">for</span> (<span class="k">const</span> card <span class="k">of</span> document.<span class="v">querySelectorAll</span>(<span class="v">'#d3 p'</span>)) {
+  <span class="k">const</span> range = rangeOf(card.firstChild, <span class="v">'quiet words'</span>);
+  CSS.highlights.<span class="v">set</span>(card.dataset.hl, <span class="k">new</span> <span class="v">Highlight</span>(range));
+}
+
+<span class="c">/* CSS */</span>
+<span class="k">::highlight(d3-bg)</span>      { <span class="k">background-color</span>: var(--accent); }
+<span class="k">::highlight(d3-deco)</span>    { <span class="k">text-decoration</span>: underline <span class="v">3px</span> var(--accent-2); }
+<span class="k">::highlight(d3-shadow)</span>  { text-shadow: <span class="v">0</span> <span class="v">0</span> <span class="v">6px</span> var(--accent-3); }
+
+<span class="c">/* not paint properties — dropped without warning */</span>
+<span class="k">::highlight(d3-weight)</span>  { font-weight: <span class="v">900</span>; }
+<span class="k">::highlight(d3-padding)</span> { padding: <span class="v">0</span> <span class="v">20px</span>; }</pre>
+  </section>
+
+  <!-- ============ 4 ============ -->
+  <section>
+    <p class="num">04 / PRIORITY — interactive</p>
+    <h2>When two highlights overlap</h2>
+    <ul class="desc">
+      <li>A and B overlap in the middle.</li>
+      <li>Higher <code>priority</code> paints on top.</li>
+      <li>Tie → the one registered last wins (B).</li>
+      <li>Drag B's priority below 0 to put A on top.</li>
+    </ul>
+
+    <div class="specimen">
+      <p class="demo-text" id="d4">
+        Two separate tools have claimed the same stretch of words in this sentence.
+      </p>
+      <div class="demo-legend">
+        <span><i style="background: var(--accent)"></i>A · priority 0</span>
+        <span><i style="background: var(--accent-2)"></i>B · priority <b id="d4-b-val">0</b></span>
+        <span>on top: <b id="d4-top">B</b></span>
+      </div>
+
+      <div class="controls">
+        <div class="ctl">
+          <label>B.priority <b id="d4-b-lbl">0</b></label>
+          <input type="range" id="d4-b" min="-2" max="2" value="0">
+        </div>
+      </div>
+    </div>
+
+<pre><span class="c">// rangeOf() is the helper from 01</span>
+<span class="k">const</span> text = document.<span class="v">querySelector</span>(<span class="v">'#d4'</span>).firstChild;
+<span class="k">const</span> a = <span class="k">new</span> <span class="v">Highlight</span>(rangeOf(text, <span class="v">'separate tools have claimed the same'</span>));
+<span class="k">const</span> b = <span class="k">new</span> <span class="v">Highlight</span>(rangeOf(text, <span class="v">'claimed the same stretch of words'</span>));
+
+CSS.highlights.<span class="v">set</span>(<span class="v">'d4-a'</span>, a);
+CSS.highlights.<span class="v">set</span>(<span class="v">'d4-b'</span>, b);  <span class="c">// registered last → wins ties</span>
+
+b.<span class="k">priority</span> = <span class="v">-1</span>;                 <span class="c">// now A paints over B</span></pre>
+  </section>
+
+  <!-- ============ 5 ============ -->
+  <section>
+    <p class="num">05 / TYPE</p>
+    <h2>Telling tools what a highlight means</h2>
+    <ul class="desc">
+      <li><code>type</code> gives a highlight a meaning.</li>
+      <li>Values: <code>"highlight"</code> (default), <code>"spelling-error"</code>, <code>"grammar-error"</code>.</li>
+      <li>Screen readers can announce it, like native spell-check.</li>
+      <li>It does not add any style — the wavy lines come from CSS.</li>
+    </ul>
+
+    <div class="specimen">
+      <p class="demo-text" id="d5">
+        The reciept was left on the table, and the guests has already gone home.
+      </p>
+      <div class="demo-legend">
+        <span><i style="background: var(--accent-2)"></i>type: "spelling-error"</span>
+        <span><i style="background: var(--accent)"></i>type: "grammar-error"</span>
+      </div>
+    </div>
+
+<pre><span class="c">// rangeOf() is the helper from 01</span>
+<span class="k">const</span> text = document.<span class="v">querySelector</span>(<span class="v">'#d5'</span>).firstChild;
+
+<span class="k">const</span> spell = <span class="k">new</span> <span class="v">Highlight</span>(rangeOf(text, <span class="v">'reciept'</span>));
+spell.<span class="k">type</span> = <span class="v">'spelling-error'</span>;
+
+<span class="k">const</span> grammar = <span class="k">new</span> <span class="v">Highlight</span>(rangeOf(text, <span class="v">'guests has'</span>));
+grammar.<span class="k">type</span> = <span class="v">'grammar-error'</span>;
+
+CSS.highlights.<span class="v">set</span>(<span class="v">'d5-spell'</span>, spell);
+CSS.highlights.<span class="v">set</span>(<span class="v">'d5-grammar'</span>, grammar);
+
+<span class="c">/* CSS */</span>
+<span class="k">::highlight(d5-spell)</span> {
+  <span class="k">text-decoration</span>: wavy underline <span class="v">1.5px</span> var(--accent-2);
+}</pre>
+  </section>
+
+  <!-- ============ 6 ============ -->
+  <section>
+    <p class="num">06 / LIVE RANGES — interactive</p>
+    <h2>Ranges follow the text; static ranges don't</h2>
+    <ul class="desc">
+      <li><code>Range</code> is live: it moves when text changes.</li>
+      <li><code>StaticRange</code> is frozen: it stays at fixed offsets.</li>
+      <li>Try it: type at the start of each line.</li>
+    </ul>
+
+    <div class="specimen">
+      <div class="demo-6">
+        <div class="row"><span>Range</span><div class="demo-edit" id="d6-live" contenteditable="true" spellcheck="false">Type here → the target word moves.</div></div>
+        <div class="row"><span>StaticRange</span><div class="demo-edit" id="d6-static" contenteditable="true" spellcheck="false">Type here → the target word moves.</div></div>
+        <button class="demo-btn" id="d6-reset" type="button">reset</button>
+      </div>
+    </div>
+
+<pre><span class="c">// rangeOf() is the helper from 01</span>
+<span class="k">const</span> liveText   = document.<span class="v">querySelector</span>(<span class="v">'#d6-live'</span>).firstChild;
+<span class="k">const</span> staticText = document.<span class="v">querySelector</span>(<span class="v">'#d6-static'</span>).firstChild;
+
+<span class="c">// Range — follows edits</span>
+<span class="k">const</span> live = rangeOf(liveText, <span class="v">'target'</span>);
+CSS.highlights.<span class="v">set</span>(<span class="v">'d6-live'</span>, <span class="k">new</span> <span class="v">Highlight</span>(live));
+
+<span class="c">// StaticRange — copy the offsets once, then they never change</span>
+<span class="k">const</span> r = rangeOf(staticText, <span class="v">'target'</span>);
+<span class="k">const</span> frozen = <span class="k">new</span> <span class="v">StaticRange</span>({
+  startContainer: r.startContainer, startOffset: r.startOffset,
+  endContainer:   r.endContainer,   endOffset:   r.endOffset,
+});
+CSS.highlights.<span class="v">set</span>(<span class="v">'d6-static'</span>, <span class="k">new</span> <span class="v">Highlight</span>(frozen));</pre>
+  </section>
+
+  <!-- ============ support (always last) ============ -->
+  <section id="support-section">
+    <p class="num">07 / AVAILABILITY</p>
+    <h2>Browser support</h2>
+    <ul class="desc">
+      <li>Live caniuse data for <code>mdn-api_highlight</code>.</li>
+      <li>A snapshot table appears if the live one can't load.</li>
+    </ul>
+
+    <div class="specimen">
+      <!-- caniuse live widget (rendered in the visitor's browser).
+           data-theme is set at load by loadCaniuse() below, matching the
+           page's current light/dark theme — don't hardcode it here. -->
+      <p class="ciu-embed"
+         data-feature="mdn-api_highlight"
+         data-past="2" data-future="1"></p>
+
+      <!-- static fallback, revealed only if the live embed doesn't render -->
+      <div id="ciu-fallback" hidden>
+        <table class="support-table">
+          <caption>CSS Custom Highlight API — snapshot, September 2026</caption>
+          <thead>
+            <tr><th>Browser</th><th>Support</th><th>Since</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Chrome</td>        <td class="yes">✓ Supported</td> <td class="since">105</td></tr>
+            <tr><td>Edge</td>          <td class="yes">✓ Supported</td> <td class="since">105</td></tr>
+            <tr><td>Firefox</td>       <td class="yes">✓ Supported</td> <td class="since">140 (full: 149)</td></tr>
+            <tr><td>Safari</td>        <td class="yes">✓ Supported</td> <td class="since">17.2</td></tr>
+            <tr><td>Chrome Android</td><td class="yes">✓ Supported</td> <td class="since">105</td></tr>
+            <tr><td>Safari iOS</td>    <td class="yes">✓ Supported</td> <td class="since">17.2</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="ciu-note">
+        <span class="badge">Baseline 2026 · newly available</span>
+        <a href="https://caniuse.com/mdn-api_highlight">caniuse.com</a>
+        <a href="https://webstatus.dev/features/highlight">webstatus.dev</a>
+      </p>
+    </div>
+  </section>
+
+  <footer>
+    View in Chrome / Edge 105+, Safari 17.2+, or Firefox 140+ · spec:
+    <a href="https://drafts.csswg.org/css-highlight-api-1/">CSS Custom Highlight API Level 1</a> ·
+    without support the text simply renders unstyled.
+  </footer>
+
+</div>
+
+<script>
+  // ---- browser-support detection ----
+  const banner = document.getElementById('support');
+  const supported = 'highlights' in CSS && CSS.supports('selector(::highlight(x))');
+  if (supported) {
+    banner.className = 'support ok';
+    banner.innerHTML = '<b>✓ Your browser supports the Custom Highlight API.</b> Every specimen below is live.';
+  } else {
+    banner.className = 'support no';
+    banner.innerHTML = '<b>✗ This browser does not support the Custom Highlight API.</b> The text renders, but no highlights will paint.';
+  }
+
+  // ---- small helpers ----
+  // Range over `word` in text node `node`, searching from offset `from`
+  // (case-insensitive). Returns null if not found.
+  const rangeOf = (node, word, from = 0) => {
+    const i = node.data.toLowerCase().indexOf(word.toLowerCase(), from);
+    if (i === -1) return null;
+    const r = new Range();
+    r.setStart(node, i);
+    r.setEnd(node, i + word.length);
+    return r;
+  };
+  const register = (name, ...ranges) => {
+    const h = new Highlight(...ranges);
+    CSS.highlights.set(name, h);
+    return h;
+  };
+  // All text nodes under `root`, in document order.
+  const textNodes = root => {
+    const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+    const out = [];
+    while (walker.nextNode()) out.push(walker.currentNode);
+    return out;
+  };
+
+  if (supported) {
+    // ---- demo 0 ----
+    const d0Text = document.getElementById('d0').firstChild;
+    const d0s = document.getElementById('d0-s');
+    const d0e = document.getElementById('d0-e');
+    d0s.max = d0e.max = d0Text.length;
+    const d0Show = (start, end) => {
+      const r = new Range();
+      r.setStart(d0Text, start);
+      r.setEnd(d0Text, end);
+      register('d0-pick', r);
+      d0s.value = start;
+      d0e.value = end;
+      for (const [id, v] of [['d0-s-val', start], ['d0-s-lbl', start], ['d0-e-val', end], ['d0-e-lbl', end]]) {
+        document.getElementById(id).textContent = v;
+      }
+      document.getElementById('d0-str').textContent = r.toString();
+    };
+    const d0Slide = () => {
+      getSelection().removeAllRanges();  // drop the mouse selection so only the highlight shows
+      const a = Number(d0s.value), b = Number(d0e.value);
+      d0Show(Math.min(a, b), Math.max(a, b));
+    };
+    d0s.addEventListener('input', d0Slide);
+    d0e.addEventListener('input', d0Slide);
+    document.addEventListener('selectionchange', () => {
+      const sel = getSelection();
+      if (sel.isCollapsed || !sel.rangeCount) return;
+      const r = sel.getRangeAt(0);
+      if (r.startContainer === d0Text && r.endContainer === d0Text) d0Show(r.startOffset, r.endOffset);
+    });
+    d0Slide();
+
+    // ---- demo 2 ----
+    const d2 = document.getElementById('d2');
+    const d2q = document.getElementById('d2-q');
+    const d2Search = () => {
+      const q = d2q.value.trim();
+      const ranges = [];
+      if (q) {
+        for (const node of textNodes(d2)) {
+          let r = rangeOf(node, q);
+          while (r) {
+            ranges.push(r);
+            r = rangeOf(node, q, r.endOffset);
+          }
+        }
+      }
+      register('d2-search', ...ranges);
+      document.getElementById('d2-count').textContent = ranges.length;
+      document.getElementById('d2-nodes').textContent = d2.querySelectorAll('*').length;
+    };
+    d2q.addEventListener('input', d2Search);
+    d2Search();
+
+    // ---- demo 3 ----
+    document.querySelectorAll('#d3 [data-hl]').forEach(p => {
+      register(p.dataset.hl, rangeOf(p.firstChild, 'quiet words'));
+    });
+
+    // ---- demo 4 ----
+    const d4Text = document.getElementById('d4').firstChild;
+    register('d4-a', rangeOf(d4Text, 'separate tools have claimed the same'));
+    const d4b = register('d4-b', rangeOf(d4Text, 'claimed the same stretch of words'));
+    const d4r = document.getElementById('d4-b');
+    const d4Apply = () => {
+      const p = Number(d4r.value);
+      d4b.priority = p;
+      document.getElementById('d4-b-lbl').textContent = p;
+      document.getElementById('d4-b-val').textContent = p;
+      // tie → later-registered (B) wins
+      document.getElementById('d4-top').textContent = p >= 0 ? 'B' : 'A';
+    };
+    d4r.addEventListener('input', d4Apply);
+    d4Apply();
+
+    // ---- demo 5 ----
+    const d5Text = document.getElementById('d5').firstChild;
+    register('d5-spell', rangeOf(d5Text, 'reciept')).type = 'spelling-error';
+    register('d5-grammar', rangeOf(d5Text, 'guests has')).type = 'grammar-error';
+
+    // ---- demo 6 ----
+    const d6Live = document.getElementById('d6-live');
+    const d6Static = document.getElementById('d6-static');
+    const d6Initial = d6Live.textContent;
+    const d6Setup = () => {
+      d6Live.textContent = d6Initial;
+      d6Static.textContent = d6Initial;
+      register('d6-live', rangeOf(d6Live.firstChild, 'target'));
+      const r = rangeOf(d6Static.firstChild, 'target');
+      register('d6-static', new StaticRange({
+        startContainer: r.startContainer, startOffset: r.startOffset,
+        endContainer: r.endContainer, endOffset: r.endOffset,
+      }));
+    };
+    document.getElementById('d6-reset').addEventListener('click', d6Setup);
+    d6Setup();
+  }
+
+  // ---- caniuse widget + graceful fallback ----
+  // pengzhanbo's embed pulls caniuse + MDN + web-features data and renders an
+  // iframe. If it doesn't render (network blocked, feature slug not found,
+  // etc.) after a grace period, the snapshot table is revealed instead.
+  (function loadCaniuse() {
+    // ponytail: theme is read once at load, not re-synced on manual toggle —
+    // the embed doesn't re-render for an attribute change after mount.
+    document.querySelector('.ciu-embed').dataset.theme = document.documentElement.dataset.theme;
+    const s = document.createElement('script');
+    s.type = 'module';
+    s.src = 'https://caniuse-embed.vercel.app/embed.js';
+    s.onerror = revealFallback;
+    document.body.appendChild(s);
+
+    function revealFallback() {
+      document.getElementById('ciu-fallback').hidden = false;
+    }
+    setTimeout(() => {
+      const rendered = document.querySelector('.ciu-embed iframe');
+      if (!rendered) revealFallback();
+    }, 3500);
+  })();
+</script>
+</body>
+</html>
