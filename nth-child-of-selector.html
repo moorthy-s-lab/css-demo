@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CSS :nth-child(An+B of S) — filtered counting</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Hanken+Grotesk:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<script>document.documentElement.dataset.theme = localStorage.theme || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');</script>
+<script src="theme.js" defer></script>
+<script src="toc.js" defer></script>
+<style>
+  /* Feature-specific CSS for this demo only — shared palette, typography,
+     masthead, specimen scaffolding, controls, code blocks, and the caniuse
+     widget all live in styles.css. */
+
+  /* ===== DEMOS 1-3 — striped tables ===== */
+  .nth-table {
+    --stripe: color-mix(in srgb, var(--accent) 14%, transparent);
+    width: 100%; border-collapse: collapse; font-size: 14px;
+  }
+  .nth-table caption {
+    text-align: left; padding-bottom: 8px;
+    font-family: "JetBrains Mono", monospace; font-size: 12px; color: var(--ink-soft);
+  }
+  .nth-table td { padding: 8px 12px; border-bottom: 1px solid var(--line); }
+  .nth-table td:last-child {
+    font-family: "JetBrains Mono", monospace; font-size: 12px; color: var(--ink-soft); text-align: right;
+  }
+  .nth-table.plain tr:nth-child(even)                 { background: var(--stripe); }
+  .nth-table.of-s  tr:nth-child(even of :not([hidden])) { background: var(--stripe); }
+  .nth-pair {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 24px;
+  }
+
+  /* ===== DEMOS 4-5 — lists ===== */
+  .nth-list {
+    list-style: none; margin: 0; padding: 0; display: grid; gap: 8px;
+  }
+  .nth-list li {
+    padding: 10px 14px; border-radius: 8px; border: 2px solid var(--line);
+    font-size: 14px; display: flex; justify-content: space-between; gap: 12px;
+  }
+  .nth-list li span {
+    font-family: "JetBrains Mono", monospace; font-size: 12px; color: var(--ink-soft);
+  }
+  .nth-list li:nth-child(1 of .featured)             { border-color: var(--accent); }
+  .nth-list li.done                                  { color: var(--ink-soft); text-decoration: line-through; }
+  .nth-list li:nth-last-child(-n + 2 of .done)       { border-color: var(--accent-3); }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <p class="eyebrow"><a href="index.html">← All demos</a> · CSS Selectors · Level 4</p>
+    <h1>Count only the rows that count.</h1>
+    <p class="lede">
+      <code>:nth-child(An+B of S)</code> counts only the siblings that match
+      <code>S</code>, and skips the rest. Zebra stripes stay correct when a
+      filter hides rows — no JS pass that re-adds an <code>.odd</code> class
+      after every change.
+    </p>
+    <div id="support" class="support"></div>
+  </header>
+
+  <!-- ============ 1 ============ -->
+  <section>
+    <p class="num">01 / PLAIN STRIPES</p>
+    <h2>:nth-child(even)</h2>
+    <p class="desc">
+      The classic zebra table. Every second row gets the stripe. This works
+      fine while every row is on screen.
+    </p>
+
+    <div class="specimen">
+      <table class="nth-table plain">
+        <tbody>
+          <tr><td>Apple</td><td>fruit</td></tr>
+          <tr><td>Banana</td><td>fruit</td></tr>
+          <tr><td>Carrot</td><td>veg</td></tr>
+          <tr><td>Pear</td><td>fruit</td></tr>
+          <tr><td>Leek</td><td>veg</td></tr>
+          <tr><td>Kale</td><td>veg</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+<pre><span class="k">tr:nth-child(even)</span> {
+  <span class="k">background</span>: <span class="v">var(--stripe)</span>;
+}</pre>
+  </section>
+
+  <!-- ============ 2 ============ -->
+  <section>
+    <p class="num">02 / THE BREAK — interactive</p>
+    <h2>Hidden rows still count</h2>
+    <p class="desc">
+      Pick a filter. It sets <code>hidden</code> on the rows that don't match.
+      <code>:nth-child(even)</code> still counts those hidden rows, so the
+      stripes now land on the wrong rows — two shaded rows touch, or none.
+    </p>
+
+    <div class="specimen">
+      <table class="nth-table plain" data-filter-by="d2-filter">
+        <tbody></tbody>
+      </table>
+
+      <div class="controls">
+        <div class="ctl">
+          <label for="d2-filter">Show</label>
+          <select id="d2-filter">
+            <option value="">all</option>
+            <option value="fruit" selected>fruit</option>
+            <option value="veg">veg</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+<pre><span class="k">tr:nth-child(even)</span> {
+  <span class="k">background</span>: <span class="v">var(--stripe)</span>;
+}
+<span class="c">/* counts every &lt;tr&gt;, including the [hidden] ones */</span></pre>
+  </section>
+
+  <!-- ============ 3 ============ -->
+  <section>
+    <p class="num">03 / OF S — interactive</p>
+    <h2>:nth-child(even of :not([hidden]))</h2>
+    <p class="desc">
+      Add <code>of S</code> and the count only includes rows that match
+      <code>S</code>. Hidden rows drop out of the count, so the visible rows
+      always alternate. Change the filter and compare the two tables.
+    </p>
+
+    <div class="specimen">
+      <div class="nth-pair">
+        <table class="nth-table plain" data-filter-by="d3-filter">
+          <caption>:nth-child(even)</caption>
+          <tbody></tbody>
+        </table>
+        <table class="nth-table of-s" data-filter-by="d3-filter">
+          <caption>:nth-child(even of :not([hidden]))</caption>
+          <tbody></tbody>
+        </table>
+      </div>
+
+      <div class="controls">
+        <div class="ctl">
+          <label for="d3-filter">Show</label>
+          <select id="d3-filter">
+            <option value="">all</option>
+            <option value="fruit" selected>fruit</option>
+            <option value="veg">veg</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+<pre><span class="k">tr:nth-child(even of :not([hidden]))</span> {
+  <span class="k">background</span>: <span class="v">var(--stripe)</span>;
+}
+<span class="c">/* S can be any selector list — :not([hidden]), .visible, [aria-selected] … */</span></pre>
+  </section>
+
+  <!-- ============ 4 ============ -->
+  <section>
+    <p class="num">04 / FIRST OF A CLASS</p>
+    <h2>:nth-child(1 of .featured)</h2>
+    <p class="desc">
+      <code>.featured:first-of-type</code> looks like it should pick the first
+      featured item, but <code>-of-type</code> means the tag name, not the
+      class — here it matches nothing. <code>1 of .featured</code> picks the
+      first <code>.featured</code> item, wherever it sits.
+    </p>
+
+    <div class="specimen">
+      <ul class="nth-list">
+        <li>Plain card <span>li</span></li>
+        <li class="featured">First featured card <span>li.featured ← matched</span></li>
+        <li>Plain card <span>li</span></li>
+        <li class="featured">Featured card <span>li.featured</span></li>
+        <li class="featured">Featured card <span>li.featured</span></li>
+      </ul>
+    </div>
+
+<pre><span class="k">li:nth-child(1 of .featured)</span> {
+  <span class="k">border-color</span>: <span class="v">var(--accent)</span>;
+}
+<span class="c">/* .featured:first-of-type → no match: the first &lt;li&gt; isn't .featured */</span></pre>
+  </section>
+
+  <!-- ============ 5 ============ -->
+  <section>
+    <p class="num">05 / FROM THE END</p>
+    <h2>:nth-last-child(-n + 2 of .done)</h2>
+    <p class="desc">
+      <code>of S</code> works on <code>:nth-last-child()</code> too. Here it
+      marks the two most recent finished tasks — the last two
+      <code>.done</code> items — and ignores the open tasks in between.
+    </p>
+
+    <div class="specimen">
+      <ul class="nth-list">
+        <li class="done">Draft outline <span>.done</span></li>
+        <li class="done">Write intro <span>.done</span></li>
+        <li class="done">Build demo <span>.done ← matched</span></li>
+        <li>Review copy <span>open</span></li>
+        <li class="done">Fix typos <span>.done ← matched</span></li>
+        <li>Publish <span>open</span></li>
+      </ul>
+    </div>
+
+<pre><span class="k">li:nth-last-child(-n + 2 of .done)</span> {
+  <span class="k">border-color</span>: <span class="v">var(--accent-3)</span>;
+}
+<span class="c">/* -n + 2 → the last 2 matches, counted from the end */</span></pre>
+  </section>
+
+  <!-- ============ 6 ============ -->
+  <section id="support-section">
+    <p class="num">06 / AVAILABILITY</p>
+    <h2>Browser support</h2>
+    <p class="desc">
+      Live data pulled from caniuse in your browser, via the
+      <code>css-nth-child-of</code> feature. If the live table can't load, a
+      snapshot table appears instead.
+    </p>
+
+    <div class="specimen">
+      <!-- data-theme is set at load by loadCaniuse() below, matching the
+           page's current light/dark theme. -->
+      <p class="ciu-embed"
+         data-feature="css-nth-child-of"
+         data-past="2" data-future="1"></p>
+
+      <div id="ciu-fallback" hidden>
+        <table class="support-table">
+          <caption>:nth-child(An+B of S) — snapshot, October 2026</caption>
+          <thead>
+            <tr><th>Browser</th><th>Support</th><th>Since</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Chrome</td>        <td class="yes">✓ Supported</td> <td class="since">111</td></tr>
+            <tr><td>Edge</td>          <td class="yes">✓ Supported</td> <td class="since">111</td></tr>
+            <tr><td>Firefox</td>       <td class="yes">✓ Supported</td> <td class="since">113</td></tr>
+            <tr><td>Safari</td>        <td class="yes">✓ Supported</td> <td class="since">9</td></tr>
+            <tr><td>Chrome Android</td><td class="yes">✓ Supported</td> <td class="since">111</td></tr>
+            <tr><td>Safari iOS</td>    <td class="yes">✓ Supported</td> <td class="since">9</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="ciu-note">
+        <span class="badge">Baseline · widely available</span>
+        <a href="https://caniuse.com/css-nth-child-of">caniuse.com</a>
+        <a href="https://webstatus.dev/features/nth-child-of">webstatus.dev</a>
+      </p>
+    </div>
+  </section>
+
+  <footer>
+    Works in every current browser · spec:
+    <a href="https://www.w3.org/TR/selectors-4/#the-nth-child-pseudo">w3.org/TR/selectors-4</a> ·
+    Baseline since 2023 — older browsers just drop the stripes.
+  </footer>
+
+</div>
+
+<script>
+  // ---- browser-support detection ----
+  const banner = document.getElementById('support');
+  const supported = CSS.supports('selector(:nth-child(1 of a))');
+  if (supported) {
+    banner.className = 'support ok';
+    banner.innerHTML = '<b>✓ Your browser supports :nth-child(… of S).</b> Every specimen below is real, live CSS.';
+  } else {
+    banner.className = 'support no';
+    banner.innerHTML = '<b>✗ This browser does not support :nth-child(… of S).</b> The "of S" specimens will render unstyled.';
+  }
+
+  // ---- demos 2-3: fill tables, filter rows by toggling [hidden] ----
+  const ROWS = [
+    ['Apple', 'fruit'], ['Banana', 'fruit'], ['Carrot', 'veg'], ['Pear', 'fruit'],
+    ['Leek', 'veg'], ['Kale', 'veg'], ['Plum', 'fruit'], ['Onion', 'veg'],
+  ];
+  const filterBind = (selId) => {
+    const s = document.getElementById(selId);
+    const tables = document.querySelectorAll(`[data-filter-by="${selId}"] tbody`);
+    tables.forEach(tb => {
+      tb.innerHTML = ROWS.map(([name, cat]) =>
+        `<tr data-cat="${cat}"><td>${name}</td><td>${cat}</td></tr>`).join('');
+    });
+    const apply = () => tables.forEach(tb =>
+      tb.querySelectorAll('tr').forEach(tr => { tr.hidden = !!s.value && tr.dataset.cat !== s.value; }));
+    s.addEventListener('change', apply);
+    apply();
+  };
+  filterBind('d2-filter');
+  filterBind('d3-filter');
+
+  // ---- caniuse widget + graceful fallback ----
+  (function loadCaniuse() {
+    // ponytail: theme is read once at load, not re-synced on manual toggle —
+    // the embed doesn't re-render for an attribute change after mount.
+    document.querySelector('.ciu-embed').dataset.theme = document.documentElement.dataset.theme;
+    const s = document.createElement('script');
+    s.type = 'module';
+    s.src = 'https://caniuse-embed.vercel.app/embed.js';
+    s.onerror = revealFallback;
+    document.body.appendChild(s);
+
+    function revealFallback() {
+      document.getElementById('ciu-fallback').hidden = false;
+    }
+    setTimeout(() => {
+      const rendered = document.querySelector('.ciu-embed iframe');
+      if (!rendered) revealFallback();
+    }, 3500);
+  })();
+</script>
+</body>
+</html>
