@@ -1,0 +1,295 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>OffscreenCanvas — a visual introduction</title>
+<style>
+:root{color-scheme:dark;--ink:#f6f3ea;--muted:#b8c2c2;--bg:#111b20;--panel:#1b2b30;--line:#46595a;--mint:#9fe4ca;--gold:#ffd477;--coral:#ff9c84;--blue:#9ccdf5;--mono:ui-monospace,SFMono-Regular,Consolas,monospace;--sans:system-ui,-apple-system,"Segoe UI",sans-serif}
+*{box-sizing:border-box}html,body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font-family:var(--sans)}body{overflow:hidden}button{font:inherit}button:focus-visible,a:focus-visible{outline:3px solid var(--gold);outline-offset:4px}button{cursor:pointer}.deck{height:100dvh;display:flex;flex-direction:column}.topbar,.footer{flex:none;display:flex;align-items:center;justify-content:space-between;padding:1.2rem 4vw;color:var(--muted);font:600 clamp(.72rem,1.05vw,.95rem) var(--mono);letter-spacing:.06em}.topbar{border-bottom:1px solid #344448}.brand{color:var(--mint)}.top-right{display:flex;gap:1.3rem;align-items:center}.quiet{border:0;background:none;color:inherit;padding:.4rem}.quiet:hover{color:var(--ink)}.slides{position:relative;flex:1;min-height:0}.slide{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;padding:2vh 7vw 4vh;gap:clamp(1rem,2.3vh,2rem)}.slide[hidden]{display:none}.eyebrow{font:700 clamp(.8rem,1.2vw,1.1rem) var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--mint);margin:0}.slide h1,.slide h2{margin:0;letter-spacing:-.055em;line-height:1.02;font-size:clamp(2.8rem,5.5vw,6.4rem);font-weight:750}.slide h1{font-size:clamp(4.2rem,8vw,9rem)}.slide h2 .accent,.accent{color:var(--mint)}.slide .sub{font-size:clamp(1.1rem,2vw,2.1rem);line-height:1.25;color:var(--muted);margin:0}.slide .bigline{font-size:clamp(1.5rem,3vw,3.1rem);line-height:1.2;margin:0}.visual{flex:0 1 auto;min-height:0}.footer{border-top:1px solid #344448;padding-top:.75rem;padding-bottom:.75rem}.nav{display:flex;gap:.65rem;align-items:center}.nav button,.action{border:1px solid #6b7f7c;border-radius:4px;color:var(--ink);background:transparent;padding:.6rem 1rem}.nav button:hover,.action:hover{background:#31443f}.nav button:disabled{opacity:.35;cursor:default}.progress{width:min(18vw,230px);height:3px;background:#405050}.progress span{display:block;height:100%;background:var(--mint);transition:width .2s}.note{position:fixed;z-index:5;right:3vw;bottom:5rem;width:min(38rem,90vw);max-height:65vh;overflow:auto;background:#f6f3ea;color:#172521;padding:1.5rem 1.8rem;box-shadow:0 12px 50px #0009;font-size:1.05rem;line-height:1.55}.note[hidden]{display:none}.note h3{margin:0 0 .6rem;font:700 1rem var(--mono);text-transform:uppercase}.note p{margin:0}.note a{color:#10584c}.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap}
+.cover{display:grid;grid-template-columns:1fr 1fr;align-items:center;gap:4vw}.cover h1 span{display:block}.cover-art{position:relative;width:min(32vw,470px);aspect-ratio:1;margin:auto}.cover-art .square{position:absolute;border:3px solid var(--mint);width:65%;height:65%;top:9%;left:3%;background:#18332e}.cover-art .square:after{content:"";position:absolute;width:60%;height:60%;border:3px solid var(--gold);right:-44%;bottom:-44%;background:#493d29}.cover-art .cross{position:absolute;right:4%;top:9%;color:var(--mint);font:500 clamp(2rem,5vw,5rem) var(--mono)}.cover-art .dots{position:absolute;left:4%;bottom:3%;font:700 clamp(1rem,2vw,2rem) var(--mono);color:var(--coral);letter-spacing:.35em}
+.lane-area{display:grid;gap:1.4rem;margin-top:1vh}.lane{display:grid;grid-template-columns:minmax(9rem,16vw) 1fr;align-items:center;gap:1.5rem}.lane-label{font:700 clamp(1rem,1.5vw,1.6rem) var(--mono);color:var(--muted)}.track{display:flex;align-items:center;gap:.6rem;min-height:clamp(5rem,10vh,8rem);padding:.6rem;border-top:2px solid var(--line);border-bottom:2px solid var(--line);overflow:hidden}.task{display:flex;align-items:center;justify-content:center;padding:.7rem 1rem;min-width:clamp(5.5rem,12vw,13rem);min-height:4rem;color:#14211e;background:var(--mint);font-weight:750;font-size:clamp(1rem,1.5vw,1.6rem);text-align:center}.task.draw{background:var(--coral);min-width:clamp(9rem,24vw,27rem)}.task.click{background:var(--gold)}.track .tiny-arrow{color:var(--muted);font-size:2rem}.flow{display:flex;align-items:center;justify-content:space-between;gap:2vw;margin:1vh 0}.flow-item{display:flex;flex-direction:column;align-items:center;gap:1rem;text-align:center;flex:1;min-width:0}.flow-icon{width:clamp(7rem,15vw,15rem);height:clamp(6rem,14vw,13rem);border:3px solid var(--mint);display:grid;place-items:center;color:var(--mint);font:700 clamp(2rem,4vw,4rem) var(--mono);position:relative}.flow-icon.gold{border-color:var(--gold);color:var(--gold)}.flow-icon.coral{border-color:var(--coral);color:var(--coral)}.flow-icon:before{content:"";position:absolute;left:0;right:0;top:20%;border-top:2px solid currentColor;opacity:.7}.flow-item strong{font-size:clamp(1.1rem,1.7vw,1.8rem)}.flow-item small{font:500 clamp(.75rem,1vw,1rem) var(--mono);color:var(--muted)}.arrow{font-size:clamp(2.2rem,4vw,4rem);color:var(--gold);flex:none}.callout{border-left:5px solid var(--gold);padding-left:1rem;color:var(--ink);font-size:clamp(1.15rem,1.8vw,1.8rem);margin:0}.thread-grid{display:grid;grid-template-columns:1fr 1fr;gap:3vw}.thread-block{border-top:3px solid var(--mint);padding-top:1rem}.thread-block.worker{border-color:var(--gold)}.thread-block h3{font:700 clamp(1rem,1.35vw,1.4rem) var(--mono);margin:0 0 1rem;color:var(--mint)}.thread-block.worker h3{color:var(--gold)}pre{margin:0;white-space:pre-wrap;overflow-wrap:anywhere;font:500 clamp(1rem,1.8vw,1.9rem)/1.65 var(--mono);color:var(--ink)}code .c{color:var(--muted)}code .v{color:var(--gold)}code .m{color:var(--mint)}
+.demo-layout{display:grid;grid-template-columns:1.35fr 1fr;gap:3vw;align-items:center}.chart-shell{position:relative;border:2px solid #70817e;background:#142427;aspect-ratio:1.8;min-height:12rem}.chart-shell canvas{width:100%;height:100%;position:absolute;inset:0}.chart-shell canvas[hidden]{display:none}.demo-side{display:flex;flex-direction:column;gap:1rem;align-items:flex-start}.switches{display:flex;gap:.6rem;flex-wrap:wrap}.switches button{padding:.8rem 1.1rem;border:2px solid #7c918a;color:var(--ink);background:transparent;font-size:clamp(1rem,1.4vw,1.4rem);font-weight:700}.switches button[aria-pressed=true]{color:#14211e;background:var(--mint);border-color:var(--mint)}.demo-side p{margin:0;color:var(--muted);font-size:clamp(1rem,1.4vw,1.4rem);line-height:1.35}.demo-side .action{background:var(--gold);border-color:var(--gold);color:#20231c;font-size:clamp(1.05rem,1.6vw,1.6rem);font-weight:750}.demo-status{min-height:1.6em;color:var(--ink)!important}.pulse{display:inline-block;width:.8em;height:.8em;border-radius:50%;background:var(--mint);margin-right:.4em;vertical-align:middle}.pulse.beat{transform:scale(.65);background:var(--gold)}.examples{display:grid;grid-template-columns:repeat(3,1fr);gap:4vw}.example{border-top:3px solid var(--mint);padding-top:1.2rem}.example:nth-child(2){border-color:var(--gold)}.example:nth-child(3){border-color:var(--coral)}.example .symbol{font:700 clamp(3.5rem,6vw,6rem) var(--mono);height:1.4em;color:var(--mint)}.example:nth-child(2) .symbol{color:var(--gold)}.example:nth-child(3) .symbol{color:var(--coral)}.example h3{font-size:clamp(1.4rem,2.2vw,2.4rem);margin:.3rem 0}.example p{font-size:clamp(1rem,1.35vw,1.35rem);line-height:1.4;color:var(--muted);margin:0}.gotchas{display:grid;grid-template-columns:1fr 1fr;gap:1.2rem 4vw}.gotcha{display:flex;gap:1rem;align-items:center;border-top:1px solid var(--line);padding-top:1rem;font-size:clamp(1.2rem,1.8vw,1.9rem);font-weight:650}.gotcha b{font:700 clamp(2rem,3vw,3rem) var(--mono);color:var(--gold)}.decision{display:grid;grid-template-columns:1fr 1fr;gap:4vw}.choice{border-top:4px solid var(--mint);padding-top:1.4rem}.choice:nth-child(2){border-color:var(--gold)}.choice strong{display:block;font-size:clamp(1.8rem,3.3vw,3.5rem);line-height:1.08}.choice p{font-size:clamp(1.2rem,1.7vw,1.7rem);color:var(--muted);line-height:1.35}.keycap{border:1px solid #73827d;border-radius:3px;padding:.15rem .4rem}
+@media(max-width:700px){body{overflow:auto}.deck{min-height:100dvh;height:auto}.slides{min-height:calc(100dvh - 125px)}.slide{position:relative;min-height:calc(100dvh - 125px);padding:2rem 6vw}.cover{grid-template-columns:1fr}.cover-art{width:35vw;max-height:20vh}.flow{gap:1vw}.flow-icon{width:21vw;height:18vw}.flow-item strong{font-size:.95rem}.flow-item small{font-size:.7rem}.arrow{font-size:1.6rem}.lane{grid-template-columns:1fr;gap:.4rem}.track{min-height:4rem}.task{min-width:5rem;min-height:3rem;padding:.4rem;font-size:.85rem}.task.draw{min-width:8rem}.thread-grid,.demo-layout{grid-template-columns:1fr}.demo-layout{gap:1rem}.chart-shell{min-height:9rem;max-height:25vh}.examples{gap:3vw}.example p{font-size:.8rem}.example h3{font-size:1rem}.gotcha{font-size:1rem}.footer{position:sticky;bottom:0;background:var(--bg)}.top-right .shortcut{display:none}.progress{display:none}pre{font-size:clamp(.75rem,3vw,1rem);line-height:1.4}.note{bottom:4rem}.sub{font-size:1rem!important}}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
+@keyframes move-arrow{0%,100%{transform:translateX(0);opacity:.65}50%{transform:translateX(.45rem);opacity:1}}
+@keyframes draw-work{0%,100%{filter:brightness(.88)}50%{filter:brightness(1.12)}}
+.slide:not([hidden]) .arrow{animation:move-arrow 1.8s ease-in-out infinite}.slide:not([hidden]) .task.draw{animation:draw-work 2s ease-in-out infinite}
+.bitmap-route{display:flex;align-items:center;justify-content:center;gap:clamp(.6rem,2vw,2rem);font-weight:750;font-size:clamp(1.1rem,2vw,2rem);text-align:center}.bitmap-route .arrow{font-size:clamp(1.6rem,3vw,3rem)}.bitmap-route span:nth-child(3){color:var(--gold);font-family:var(--mono)}.bitmap-code pre{font-size:clamp(.9rem,1.45vw,1.55rem);line-height:1.5}
+@media(max-width:700px){.bitmap-route{font-size:clamp(.8rem,3vw,1.1rem)}.bitmap-code pre{font-size:clamp(.72rem,2.9vw,1rem)}}
+/* Code blocks retain their full height and preserve line breaks on short screens. */
+.slide.code-slide{justify-content:safe center;overflow-y:auto;gap:clamp(.65rem,1.5vh,1.25rem)}
+.code-slide h2{font-size:clamp(2.2rem,min(5.5vw,8vh),6.4rem)}
+.code-slide .visual{flex:0 0 auto;min-height:auto}
+.code-slide .thread-block{min-width:0}
+.code-slide pre{white-space:pre;overflow-x:auto;overflow-wrap:normal;font-size:clamp(.8rem,min(1.45vw,2.5vh),1.55rem);line-height:1.4}
+@media(max-width:700px){.code-slide pre{font-size:clamp(.65rem,2.9vw,1rem)}}
+.bitmap-live{display:grid;grid-template-columns:1.3fr 1fr;gap:3vw;align-items:center}.bitmap-live .chart-shell{aspect-ratio:2;min-height:10rem}.bitmap-live .demo-side{gap:.8rem}.bitmap-count{font:700 clamp(1rem,1.5vw,1.5rem) var(--mono);color:var(--mint)}
+.responsiveness{width:100%;border-top:1px solid var(--line);padding-top:.7rem}.responsiveness-track{position:relative;height:1.4rem;margin:.35rem 0 .6rem;border-bottom:2px solid var(--line)}.responsiveness-marker{position:absolute;left:2%;bottom:-.45rem;width:1rem;height:1rem;border-radius:50%;background:var(--mint);transform:translateX(-50%)}.demo-side .responsiveness-rate{color:var(--ink);font-weight:700;font-size:clamp(1rem,1.5vw,1.5rem)}
+#demo-slide{justify-content:safe center;overflow-y:auto}#demo-slide .visual{flex:0 0 auto;min-height:auto}
+@media(max-width:700px){.bitmap-live{grid-template-columns:1fr;gap:1rem}.bitmap-live .chart-shell{max-height:23vh;min-height:8rem}}
+</style>
+</head>
+<body>
+<div class="deck">
+  <header class="topbar"><span class="brand">◼ &nbsp;CANVAS / FIELD NOTES</span><div class="top-right"><span class="shortcut">← → &nbsp; NAVIGATE</span><button class="quiet" id="notes-button" aria-expanded="false" aria-controls="notes">NOTES [N]</button><button class="quiet" id="fullscreen" aria-label="Toggle full screen">FULL SCREEN [F]</button></div></header>
+  <main class="slides" id="slides" aria-live="polite">
+    <section class="slide" data-notes="Introduce the question: what does OffscreenCanvas add to the regular canvas? Over the next ten minutes, follow the work from the main thread to a worker. Timing: 30 seconds.">
+      <div class="cover"><div><p class="eyebrow">A visual introduction · 10 min</p><h1><span>Offscreen</span><span class="accent">Canvas</span></h1><p class="sub">Give rendering room to breathe.</p></div><div class="cover-art" aria-hidden="true"><div class="square"></div><div class="cross">✳</div><div class="dots">·····</div></div></div>
+    </section>
+    <section class="slide" hidden data-notes="A page's main thread handles JavaScript, input, and much of the work needed to update the interface. A long rendering task can delay a click. The exact scheduling is more complicated than this simplified queue, but the competition for main-thread time is the key point. Timing: 55 seconds.">
+      <p class="eyebrow">01 / The problem</p><h2>One thread. <span class="accent">A lot to do.</span></h2>
+      <div class="lane-area visual" role="img" aria-label="Main thread: a long drawing task delays a click behind it."><div class="lane"><div class="lane-label">MAIN THREAD</div><div class="track"><span class="task">layout</span><span class="task draw">draw chart</span><span class="task click">click</span><span class="tiny-arrow">→</span></div></div></div>
+      <p class="callout">Long work can delay interaction.</p>
+    </section>
+    <section class="slide" hidden data-notes="A normal canvas can exist without being inserted into the DOM. You can draw a background once and copy it onto a visible canvas using drawImage. You can also export it with toBlob. None of that moves the work off the main thread. Timing: 55 seconds.">
+      <p class="eyebrow">02 / A familiar trick</p><h2>A hidden canvas <span class="accent">already works</span></h2>
+      <div class="flow visual" role="img" aria-label="A regular hidden canvas draws a background, then copies it to the visible canvas, all on the main thread."><div class="flow-item"><div class="flow-icon">▧</div><strong>Hidden canvas</strong><small>draw once</small></div><div class="arrow">→</div><div class="flow-item"><div class="flow-icon gold">⧉</div><strong>drawImage()</strong><small>copy pixels</small></div><div class="arrow">→</div><div class="flow-item"><div class="flow-icon coral">▥</div><strong>Visible canvas</strong><small>main thread</small></div></div>
+      <p class="callout">Offscreen doesn’t automatically mean “in a worker.”</p>
+    </section>
+    <section class="slide" hidden data-notes="OffscreenCanvas can be created on the main thread or transferred to a worker. The important capability is that the worker can own the canvas and issue drawing commands. A visible canvas can act as its placeholder; its image is updated by the browser. Worker rendering may help responsiveness, but it does not guarantee higher frame rates. Timing: 65 seconds.">
+      <p class="eyebrow">03 / The difference</p><h2>Move drawing <span class="accent">to a worker</span></h2>
+      <div class="lane-area visual" role="img" aria-label="The main thread handles interface work while a worker draws into a canvas displayed on the page."><div class="lane"><div class="lane-label">MAIN THREAD</div><div class="track"><span class="task">layout</span><span class="task click">click</span><span class="task">input</span></div></div><div class="lane"><div class="lane-label">WORKER</div><div class="track"><span class="task draw">draw chart</span><span class="tiny-arrow">→</span><span class="task">canvas</span></div></div></div>
+      <p class="callout">Rendering and interaction can make progress separately.</p>
+    </section>
+    <section class="slide" hidden data-notes="Walk through the ownership transfer. First transfer control of the HTML canvas before getting a context. Then send the OffscreenCanvas to the worker using postMessage and the transfer list. The worker gets the context and draws; the browser updates the visible placeholder. Timing: 65 seconds.">
+      <p class="eyebrow">04 / The journey</p><h2>Canvas → <span class="accent">worker</span></h2>
+      <div class="flow visual" role="img" aria-label="A visible canvas is transferred to an OffscreenCanvas, sent to the worker, and drawn by that worker."><div class="flow-item"><div class="flow-icon">▥</div><strong>Page canvas</strong><small>&lt;canvas&gt;</small></div><div class="arrow">→</div><div class="flow-item"><div class="flow-icon gold">⇥</div><strong>Transfer</strong><small>postMessage</small></div><div class="arrow">→</div><div class="flow-item"><div class="flow-icon coral">⚙</div><strong>Worker draws</strong><small>getContext('2d')</small></div></div>
+      <p class="callout">The page’s canvas displays the worker’s drawing.</p>
+    </section>
+    <section class="slide code-slide" hidden data-notes="Read the minimal code from left to right. transferControlToOffscreen must happen before calling getContext on the HTML canvas. The second postMessage argument transfers ownership. In the worker, get the 2D context and draw. The browser updates the placeholder automatically; no commit call is needed. Timing: 70 seconds. Source: https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement/transferControlToOffscreen">
+      <p class="eyebrow">05 / The code</p><h2>Three steps to <span class="accent">draw</span></h2>
+      <div class="thread-grid visual"><div class="thread-block"><h3>MAIN THREAD</h3><pre><code><span class="c">// 1. Transfer control</span>
+<span class="v">const</span> offscreen = canvas
+  .<span class="m">transferControlToOffscreen</span>();
+
+<span class="c">// 2. Transfer ownership</span>
+worker.<span class="m">postMessage</span>(offscreen,
+  [offscreen]);</code></pre></div><div class="thread-block worker"><h3>WORKER</h3><pre><code><span class="c">// 3. Draw</span>
+onmessage = ({ data }) =&gt; {
+  <span class="v">const</span> ctx = data
+    .<span class="m">getContext</span>("2d");
+  ctx.<span class="m">fillRect</span>(0, 0, 100, 100);
+};</code></pre></div></div>
+    </section>
+    <section class="slide" id="demo-slide" hidden data-notes="Start with main-thread mode, then switch to worker mode. Each chart frame deliberately simulates about 160 milliseconds of CPU work in the selected thread. Watch the dot and the main-thread animation callbacks per second: the dot should stutter and the callback rate should drop in main-thread mode, while the UI should update more smoothly in worker mode. The chart runs the same workload in both cases, so it may animate slowly in both. Press Test interaction to demonstrate that the main thread must also process input. This is an exaggerated illustration, not a benchmark or a guarantee of performance; results vary by browser, device, and background-tab throttling. Worker mode requires OffscreenCanvas and worker requestAnimationFrame support. Timing: 80 seconds.">
+      <p class="eyebrow">06 / Live comparison</p><h2>Where does the <span class="accent">work run?</span></h2>
+      <div class="demo-layout visual"><div class="chart-shell"><canvas id="main-chart" width="900" height="500" aria-label="Animated chart rendered on the main thread"></canvas><canvas id="worker-chart" width="900" height="500" aria-label="Animated chart rendered in a worker" hidden></canvas></div><div class="demo-side"><div class="switches" role="group" aria-label="Rendering mode"><button id="main-mode" aria-pressed="false">Main thread</button><button id="worker-mode" aria-pressed="false">Worker</button></div><p>Same simulated 160 ms of work per chart frame.</p><button class="action" id="test-click">Test interaction</button><p class="demo-status" id="demo-status" role="status">Select a mode to start.</p><div class="responsiveness"><p>Main-thread animation</p><div class="responsiveness-track" aria-hidden="true"><span class="responsiveness-marker" id="responsiveness-marker"></span></div><p class="responsiveness-rate"><span id="ui-rate">—</span> callbacks / second</p></div></div></div>
+    </section>
+    <section class="slide code-slide" hidden data-notes="These snippets show the essential image-transfer steps used by the live example on the next slide. The worker creates its OffscreenCanvas and context once, then draws the background and moving square for each frame. It sends the ImageBitmap as a message with type frame. The main thread draws and closes the bitmap, then sends next so the worker can render another frame. Error handling, initial setup, and the frame counter are omitted for readability. The snippets assume a worker has been created and the visible canvas's 2D context is available as ctx. transferToImageBitmap replaces the offscreen canvas's image with a blank one, so the worker redraws the full frame. Timing: 45 seconds. Source: https://developer.mozilla.org/en-US/docs/Web/API/OffscreenCanvas/transferToImageBitmap">
+      <p class="eyebrow">07 / Independent canvas</p><h2>Send the <span class="accent">image back</span></h2>
+      <div class="bitmap-route visual" role="img" aria-label="A worker draws on an independent OffscreenCanvas, transfers an ImageBitmap, and the main thread draws it on the visible canvas."><span>Worker canvas</span><span class="arrow" aria-hidden="true">→</span><span>ImageBitmap</span><span class="arrow" aria-hidden="true">→</span><span>Page canvas</span></div>
+      <div class="thread-grid bitmap-code visual"><div class="thread-block worker"><h3>WORKER</h3><pre><code><span class="v">const</span> canvas = <span class="v">new</span> OffscreenCanvas(600, 300);
+<span class="v">const</span> ctx = canvas.<span class="m">getContext</span>("2d");
+<span class="c">// Draw the moving square and background</span>
+<span class="v">const</span> bitmap = canvas.<span class="m">transferToImageBitmap</span>();
+<span class="m">postMessage</span>({ type: "frame", bitmap }, [bitmap]);</code></pre></div><div class="thread-block"><h3>MAIN THREAD</h3><pre><code>worker.onmessage = ({ data }) =&gt; {
+  <span class="v">if</span> (data.type !== "frame") <span class="v">return</span>;
+  ctx.<span class="m">drawImage</span>(data.bitmap, 0, 0);
+  data.bitmap.<span class="m">close</span>();
+  worker.<span class="m">postMessage</span>("next");
+};</code></pre></div></div>
+      <p class="callout">No connected canvas: transfer the image yourself.</p>
+    </section>
+    <section class="slide" id="bitmap-slide" hidden data-notes="This is a working version of the independent canvas example from the previous slide. Press Start. The worker creates its own OffscreenCanvas and renders an image. It transfers an ImageBitmap to the main thread, where drawImage displays it on an ordinary canvas and close releases it. The main thread acknowledges each frame before the worker renders the next one, preventing an unbounded queue. transferToImageBitmap replaces the image with a blank one, so the worker redraws the full frame each time. The counter tracks images received, not a performance benchmark. Press Stop, or leave the slide, to terminate the worker. Timing: 50 seconds.">
+      <p class="eyebrow">08 / Live image transfer</p><h2>A frame’s <span class="accent">journey</span></h2>
+      <div class="bitmap-route visual" role="img" aria-label="An independent worker canvas sends an ImageBitmap to the main thread for display."><span>Worker canvas</span><span class="arrow" aria-hidden="true">→</span><span>ImageBitmap</span><span class="arrow" aria-hidden="true">→</span><span>Page canvas</span></div>
+      <div class="bitmap-live visual"><div class="chart-shell"><canvas id="bitmap-display" width="600" height="300" aria-label="Image rendered by a worker and displayed on the main thread"></canvas></div><div class="demo-side"><button class="action" id="bitmap-toggle" aria-pressed="false">Start example</button><p class="bitmap-count">Images received: <span id="bitmap-count">0</span></p><p id="bitmap-status" role="status">Ready to render in the worker.</p></div></div>
+      <p class="callout">Worker draws. Main thread displays.</p>
+    </section>
+    <section class="slide" hidden data-notes="Close with the decision. If a regular canvas meets the need and the page stays responsive, keep the simpler approach. If profiling shows rendering is causing main-thread delays, consider moving it to a worker with OffscreenCanvas. Measure the result, including communication overhead. Invite questions. Timing: 50 seconds.">
+      <p class="eyebrow">09 / The choice</p><h2>Choose for the <span class="accent">problem</span></h2>
+      <div class="decision visual"><div class="choice"><strong>Regular canvas</strong><p>Simple drawing<br>Responsive page</p></div><div class="choice"><strong>OffscreenCanvas<br>+ worker</strong><p>Rendering causes<br>main-thread delays</p></div></div>
+      <p class="callout">Measure responsiveness. Then choose.</p>
+    </section>
+  </main>
+  <aside class="note" id="notes" hidden aria-label="Speaker notes"><h3>Speaker notes</h3><p id="note-text"></p></aside>
+  <footer class="footer"><div class="progress" aria-hidden="true"><span id="progress"></span></div><div id="counter">01 / 10</div><nav class="nav" aria-label="Slide navigation"><button id="previous" aria-label="Previous slide">←</button><button id="next" aria-label="Next slide">→</button></nav></footer>
+</div>
+<script>
+(() => {
+  const slides = [...document.querySelectorAll('.slide')];
+  const prev = document.querySelector('#previous'), next = document.querySelector('#next');
+  const counter = document.querySelector('#counter'), progress = document.querySelector('#progress');
+  const notes = document.querySelector('#notes'), notesButton = document.querySelector('#notes-button');
+  const mainCanvas = document.querySelector('#main-chart'), workerCanvas = document.querySelector('#worker-chart');
+  const demoIndex = slides.indexOf(document.querySelector('#demo-slide'));
+  const bitmapIndex = slides.indexOf(document.querySelector('#bitmap-slide'));
+  const bitmapCanvas = document.querySelector('#bitmap-display'), bitmapButton = document.querySelector('#bitmap-toggle');
+  const bitmapCount = document.querySelector('#bitmap-count'), bitmapStatus = document.querySelector('#bitmap-status');
+  const mainButton = document.querySelector('#main-mode'), workerButton = document.querySelector('#worker-mode');
+  const status = document.querySelector('#demo-status');
+  const marker = document.querySelector('#responsiveness-marker'), uiRate = document.querySelector('#ui-rate');
+  const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let current = 0, mode = null, mainFrame = 0, heartbeat = 0, worker = null, workerReady = false, clickCount = 0;
+  let bitmapWorkerInstance = null, receivedFrames = 0, uiWindowStart = null, uiCallbacks = 0;
+
+  function showSlide(index) {
+    index = Math.max(0, Math.min(slides.length - 1, index));
+    if (current === demoIndex && index !== demoIndex) stopDemo();
+    if (current === bitmapIndex && index !== bitmapIndex) stopBitmapExample();
+    current = index;
+    slides.forEach((slide, i) => { slide.hidden = i !== current; });
+    counter.textContent = `${String(current + 1).padStart(2, '0')} / ${String(slides.length).padStart(2, '0')}`;
+    progress.style.width = `${(current + 1) / slides.length * 100}%`;
+    prev.disabled = current === 0; next.disabled = current === slides.length - 1;
+    document.querySelector('#note-text').textContent = slides[current].dataset.notes;
+    history.replaceState(null, '', `#${current + 1}`);
+    if (current === demoIndex && !mode) status.textContent = 'Select a mode to start.';
+  }
+  function toggleNotes() { notes.hidden = !notes.hidden; notesButton.setAttribute('aria-expanded', String(!notes.hidden)); }
+  prev.addEventListener('click', () => showSlide(current - 1));
+  next.addEventListener('click', () => showSlide(current + 1));
+  notesButton.addEventListener('click', toggleNotes);
+  document.querySelector('#fullscreen').addEventListener('click', async () => {
+    try { if (document.fullscreenElement) await document.exitFullscreen(); else await document.documentElement.requestFullscreen(); }
+    catch { /* The presentation remains usable without full screen. */ }
+  });
+  window.addEventListener('keydown', event => {
+    if (event.altKey || event.ctrlKey || event.metaKey || /^(INPUT|TEXTAREA|SELECT)$/.test(event.target.tagName)) return;
+    if (event.key === ' ' && event.target.tagName === 'BUTTON') return;
+    if (event.key === 'ArrowRight' || event.key === 'PageDown' || event.key === ' ') { event.preventDefault(); showSlide(current + 1); }
+    else if (event.key === 'ArrowLeft' || event.key === 'PageUp') { event.preventDefault(); showSlide(current - 1); }
+    else if (event.key.toLowerCase() === 'n') toggleNotes();
+    else if (event.key.toLowerCase() === 'f') document.querySelector('#fullscreen').click();
+  });
+
+  // This function is shared as source with the worker so both modes draw the same scene.
+  function renderChart(ctx, time) {
+    const w = ctx.canvas.width, h = ctx.canvas.height;
+    ctx.fillStyle = '#142427'; ctx.fillRect(0, 0, w, h);
+    ctx.strokeStyle = '#344e4d'; ctx.lineWidth = 2;
+    for (let y = 80; y < h; y += 90) { ctx.beginPath(); ctx.moveTo(45, y); ctx.lineTo(w - 45, y); ctx.stroke(); }
+    ctx.beginPath(); ctx.strokeStyle = '#9fe4ca'; ctx.lineWidth = 7;
+    for (let x = 45; x <= w - 45; x += 4) {
+      const y = h * .58 + Math.sin(x / 105 + time / 900) * 65 + Math.sin(x / 39 + time / 1400) * 22 - x * .1;
+      if (x === 45) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+    // Deliberately simulate expensive rendering on whichever thread owns the canvas.
+    const until = performance.now() + 160;
+    while (performance.now() < until) { /* busy work for the demonstration */ }
+  }
+  function mainLoop(time) { if (mode !== 'main') return; renderChart(mainCanvas.getContext('2d'), time); mainFrame = requestAnimationFrame(mainLoop); }
+  function beat(time) {
+    if (!mode) return;
+    if (uiWindowStart === null) uiWindowStart = time;
+    uiCallbacks++;
+    const elapsed = time - uiWindowStart;
+    if (elapsed >= 1000) {
+      uiRate.textContent = String(Math.round(uiCallbacks * 1000 / elapsed));
+      uiWindowStart = time; uiCallbacks = 0;
+    }
+    if (!reducedMotion) marker.style.left = `${50 + 48 * Math.sin(time / 450)}%`;
+    heartbeat = requestAnimationFrame(beat);
+  }
+  function stopDemo() {
+    mode = null; cancelAnimationFrame(mainFrame); cancelAnimationFrame(heartbeat);
+    uiWindowStart = null; uiCallbacks = 0; uiRate.textContent = '—'; marker.style.left = '2%';
+    if (worker) worker.postMessage({ type: 'stop' });
+  }
+  function startDemo(selected) {
+    stopDemo();
+    if (selected === 'worker' && (!('transferControlToOffscreen' in workerCanvas) || !window.Worker)) {
+      status.textContent = 'Worker rendering is unavailable in this browser.'; return;
+    }
+    if (selected === 'worker' && !workerReady) {
+      try {
+        const source = `const renderChart = ${renderChart.toString()}; let ctx, running = false, frameId; function frame(t) { if (!running) return; renderChart(ctx, t); frameId = self.requestAnimationFrame(frame); } self.onmessage = ({data}) => { if (data.type === 'init') { ctx = data.canvas.getContext('2d'); if (!ctx || typeof self.requestAnimationFrame !== 'function') { self.postMessage({type:'unsupported'}); return; } self.postMessage({type:'ready'}); } else if (data.type === 'start' && !running) { running = true; frameId = self.requestAnimationFrame(frame); } else if (data.type === 'stop') { running = false; if (frameId !== undefined) self.cancelAnimationFrame(frameId); } };`;
+        const url = URL.createObjectURL(new Blob([source], {type:'text/javascript'}));
+        worker = new Worker(url); URL.revokeObjectURL(url);
+        worker.onmessage = ({data}) => { if (data.type === 'unsupported') { stopDemo(); status.textContent = 'Worker animation is unavailable in this browser.'; workerButton.disabled = true; } };
+        worker.onerror = () => { stopDemo(); status.textContent = 'Worker rendering could not start in this browser.'; workerButton.disabled = true; };
+        const offscreen = workerCanvas.transferControlToOffscreen();
+        worker.postMessage({ type: 'init', canvas: offscreen }, [offscreen]);
+        workerReady = true;
+      } catch { status.textContent = 'Worker rendering could not start in this browser.'; return; }
+    }
+    mode = selected; mainCanvas.hidden = selected !== 'main'; workerCanvas.hidden = selected !== 'worker';
+    mainButton.setAttribute('aria-pressed', String(selected === 'main')); workerButton.setAttribute('aria-pressed', String(selected === 'worker'));
+    status.textContent = selected === 'main' ? 'Rendering on the main thread.' : 'Rendering in the worker.';
+    if (selected === 'main') mainFrame = requestAnimationFrame(mainLoop); else worker.postMessage({ type: 'start' });
+    heartbeat = requestAnimationFrame(beat);
+  }
+  mainButton.addEventListener('click', () => startDemo('main'));
+  workerButton.addEventListener('click', () => startDemo('worker'));
+  document.querySelector('#test-click').addEventListener('click', () => { clickCount++; status.textContent = `Interaction received: ${clickCount}`; });
+
+  // The worker owns an independent canvas; only its ImageBitmap crosses the thread boundary.
+  function bitmapWorker() {
+    let canvas, ctx, count = 0;
+    function draw() {
+      try {
+        ctx.fillStyle = '#142427'; ctx.fillRect(0, 0, 600, 300);
+        ctx.strokeStyle = '#344e4d'; ctx.lineWidth = 2;
+        for (let x = 50; x < 600; x += 100) { ctx.beginPath(); ctx.moveTo(x, 30); ctx.lineTo(x, 270); ctx.stroke(); }
+        const x = 40 + (count++ * 9) % 470;
+        ctx.fillStyle = '#9fe4ca'; ctx.fillRect(x, 95, 90, 90);
+        ctx.fillStyle = '#ffd477'; ctx.fillRect(40, 235, 520, 5);
+        const bitmap = canvas.transferToImageBitmap();
+        self.postMessage({ type: 'frame', bitmap }, [bitmap]);
+      } catch (error) { self.postMessage({ type: 'error' }); }
+    }
+    self.onmessage = ({ data }) => {
+      if (data === 'start') {
+        try {
+          canvas = new OffscreenCanvas(600, 300);
+          ctx = canvas.getContext('2d');
+          if (!ctx || typeof canvas.transferToImageBitmap !== 'function') throw new Error('Unsupported');
+          draw();
+        } catch (error) { self.postMessage({ type: 'error' }); }
+      } else if (data === 'next') {
+        setTimeout(draw, 33);
+      }
+    };
+  }
+  function stopBitmapExample(message = 'Example stopped.') {
+    if (bitmapWorkerInstance) bitmapWorkerInstance.terminate();
+    bitmapWorkerInstance = null;
+    bitmapButton.textContent = 'Start example';
+    bitmapButton.setAttribute('aria-pressed', 'false');
+    bitmapStatus.textContent = message;
+  }
+  function startBitmapExample() {
+    const ctx = bitmapCanvas.getContext('2d');
+    if (!window.Worker || !ctx) { stopBitmapExample('This browser cannot run the example.'); return; }
+    let url;
+    try {
+      url = URL.createObjectURL(new Blob([`(${bitmapWorker.toString()})()`], { type: 'text/javascript' }));
+      const activeWorker = new Worker(url);
+      bitmapWorkerInstance = activeWorker;
+      activeWorker.onmessage = ({ data }) => {
+        if (data.type === 'error') {
+          if (bitmapWorkerInstance === activeWorker) stopBitmapExample('Worker canvas is unavailable in this browser.');
+          return;
+        }
+        if (data.type !== 'frame') return;
+        if (bitmapWorkerInstance !== activeWorker) { data.bitmap.close(); return; }
+        try {
+          ctx.drawImage(data.bitmap, 0, 0);
+          bitmapCount.textContent = String(++receivedFrames);
+        } catch (error) {
+          stopBitmapExample('The image could not be displayed.');
+        } finally { data.bitmap.close(); }
+        if (bitmapWorkerInstance === activeWorker) activeWorker.postMessage('next');
+      };
+      activeWorker.onerror = () => {
+        if (bitmapWorkerInstance === activeWorker) stopBitmapExample('Worker rendering could not start in this browser.');
+      };
+      receivedFrames = 0; bitmapCount.textContent = '0';
+      bitmapButton.textContent = 'Stop example'; bitmapButton.setAttribute('aria-pressed', 'true');
+      bitmapStatus.textContent = 'Rendering in worker; displaying on main thread.';
+      activeWorker.postMessage('start');
+    } catch (error) {
+      stopBitmapExample('Worker rendering could not start in this browser.');
+    } finally { if (url) URL.revokeObjectURL(url); }
+  }
+  bitmapButton.addEventListener('click', () => {
+    if (bitmapWorkerInstance) stopBitmapExample(); else startBitmapExample();
+  });
+  const initial = Number(location.hash.slice(1));
+  showSlide(Number.isInteger(initial) && initial > 0 ? initial - 1 : 0);
+})();
+</script>
+</body>
+</html>
